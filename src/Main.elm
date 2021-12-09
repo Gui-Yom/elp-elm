@@ -67,11 +67,12 @@ programList prog =
 view : Model -> Html Msg
 view model =
     div []
-        [ input [ placeholder "Text to reverse", value model.progText, onInput Change ] []
+        [ input [ placeholder "Program text", value model.progText, onInput Change ] []
         , case Parser.run pProgram model.progText of
             Ok prog ->
                 programList prog
 
+            -- TODO(guillaume) display parse errors
             Err err ->
                 text "Error: "
         , canvas [ id "render" ] []
