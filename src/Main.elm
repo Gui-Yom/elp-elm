@@ -86,17 +86,24 @@ programList prog =
         )
 
 
-drawProgram : Program -> List (Svg msg)
-drawProgram prog =
-    let
-        cursor =
-            { x = 0, y = 0, angle = 0 }
-    in
-    List.concatMap
-        (\inst ->
+type alias Cursor =
+    { x : Int, y : Int, angle : Int }
+
+
+drawProgram : Program -> Cursor -> List (Svg msg)
+drawProgram prog cursor =
+    case prog of
+        [] ->
+            []
+
+        inst :: subprog ->
             case inst of
-                Repeat n subProg ->
-                    List.concatMap (\_ -> drawProgram subProg) (List.range 1 n)
+                Repeat n toRepeat ->
+                    if n <= 1 then
+                        drawProgram (toRepeat ++ subprog) cursor
+
+                    else
+                        drawProgram (toRepeat ++ [ Repeat (n - 1) toRepeat ] ++ subprog) cursor
 
                 Forward n ->
                     [ line
@@ -108,11 +115,28 @@ drawProgram prog =
                         ]
                         []
                     ]
+                        ++ drawProgram subprog { cursor | x = cursor.x + n }
+
+                Left n ->
+                    drawProgram subprog { cursor | angle = correctAngle (cursor.angle - n) }
+
+                Right n ->
+                    drawProgram subprog { cursor | angle = correctAngle (cursor.angle + n) }
 
                 _ ->
                     []
-        )
-        prog
+
+
+correctAngle : Int -> Int
+correctAngle angle =
+    if angle >= 360 then
+        angle - 360
+
+    else if angle < 0 then
+        angle + 360
+
+    else
+        angle
 
 
 view : Model -> Html Msg
@@ -139,7 +163,7 @@ view model =
                 [ width "500", height "500", viewBox "0 0 500 500" ]
                 (case model.lastSuccessful of
                     Just prog ->
-                        drawProgram prog
+                        drawProgram prog { x = 250, y = 250, angle = 0 }
 
                     Nothing ->
                         []
