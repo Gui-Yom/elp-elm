@@ -106,25 +106,29 @@ drawProgram prog cursor =
                         drawProgram (toRepeat ++ [ Repeat (n - 1) toRepeat ] ++ subprog) cursor
 
                 Forward n ->
+                    let
+                        newCursor =
+                            { cursor
+                                | x = cursor.x + round (toFloat n * cos (degrees (toFloat cursor.angle)))
+                                , y = cursor.y + round (toFloat n * sin (degrees (toFloat cursor.angle)))
+                            }
+                    in
                     [ line
                         [ x1 (String.fromInt cursor.x)
                         , y1 (String.fromInt cursor.y)
-                        , x2 (String.fromInt (cursor.x + n))
-                        , y2 (String.fromInt cursor.y)
+                        , x2 (String.fromInt newCursor.x)
+                        , y2 (String.fromInt newCursor.y)
                         , style "stroke:rgb(255,0,0);stroke-width:2"
                         ]
                         []
                     ]
-                        ++ drawProgram subprog { cursor | x = cursor.x + n }
+                        ++ drawProgram subprog newCursor
 
                 Left n ->
                     drawProgram subprog { cursor | angle = correctAngle (cursor.angle - n) }
 
                 Right n ->
                     drawProgram subprog { cursor | angle = correctAngle (cursor.angle + n) }
-
-                _ ->
-                    []
 
 
 correctAngle : Int -> Int
@@ -141,8 +145,8 @@ correctAngle angle =
 
 view : Model -> Html Msg
 view model =
-    div [ style "display: flex;" ]
-        [ div [ style "flex: 50%; margin: auto;" ]
+    div [ style "display: flex; justify-content: space-around; height: 600px; align-content: stretch;" ]
+        [ div [ style "flex: 0 0 50%; margin-top: 20px" ]
             [ textarea [ placeholder "Program text", value model.progText, onInput ProgramTextUpdated, autofocus True, cols 80, rows 30 ] []
             , p []
                 [ case model.error of
@@ -158,7 +162,7 @@ view model =
                                 text "Please enter a program"
                 ]
             ]
-        , div [ style "flex: 50%; margin: auto;" ]
+        , div [ style "flex: 0 0 500px; margin-top: 20px" ]
             [ svg
                 [ width "500", height "500", viewBox "0 0 500 500" ]
                 (case model.lastSuccessful of
