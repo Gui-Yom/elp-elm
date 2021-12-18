@@ -87,7 +87,7 @@ programList prog =
 
 
 type alias Cursor =
-    { x : Int, y : Int, angle : Int }
+    { x : Float, y : Float, angle : Float }
 
 
 drawProgram : Program -> Cursor -> List (Svg msg)
@@ -105,19 +105,19 @@ drawProgram prog cursor =
                     else
                         drawProgram (toRepeat ++ [ Repeat (n - 1) toRepeat ] ++ subprog) cursor
 
-                Forward n ->
+                Forward length ->
                     let
                         newCursor =
                             { cursor
-                                | x = cursor.x + round (toFloat n * cos (degrees (toFloat cursor.angle)))
-                                , y = cursor.y + round (toFloat n * sin (degrees (toFloat cursor.angle)))
+                                | x = cursor.x + length * cos (degrees cursor.angle)
+                                , y = cursor.y + length * sin (degrees cursor.angle)
                             }
                     in
                     [ line
-                        [ x1 (String.fromInt cursor.x)
-                        , y1 (String.fromInt cursor.y)
-                        , x2 (String.fromInt newCursor.x)
-                        , y2 (String.fromInt newCursor.y)
+                        [ x1 (String.fromFloat cursor.x)
+                        , y1 (String.fromFloat cursor.y)
+                        , x2 (String.fromFloat newCursor.x)
+                        , y2 (String.fromFloat newCursor.y)
                         , style "stroke:rgb(255,0,0);stroke-width:2"
                         ]
                         []
@@ -131,7 +131,7 @@ drawProgram prog cursor =
                     drawProgram subprog { cursor | angle = correctAngle (cursor.angle + n) }
 
 
-correctAngle : Int -> Int
+correctAngle : Float -> Float
 correctAngle angle =
     if angle >= 360 then
         angle - 360
@@ -147,7 +147,16 @@ view : Model -> Html Msg
 view model =
     div [ style "display: flex; justify-content: space-around; height: 600px; align-content: stretch;" ]
         [ div [ style "flex: 0 0 50%; margin-top: 20px" ]
-            [ textarea [ placeholder "Program text", value model.progText, onInput ProgramTextUpdated, autofocus True, cols 80, rows 30 ] []
+            [ textarea
+                [ placeholder "Program text"
+                , value model.progText
+                , onInput ProgramTextUpdated
+                , autofocus True
+                , cols 80
+                , rows 30
+                , style "font-family: monospace; font-size: 13px"
+                ]
+                []
             , p []
                 [ case model.error of
                     Just err ->

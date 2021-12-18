@@ -1,12 +1,12 @@
 module Program exposing (Inst(..), Program, pProgram)
 
-import Parser exposing ((|.), (|=), Parser, Trailing(..), int, lazy, oneOf, sequence, spaces, succeed, token)
+import Parser exposing ((|.), (|=), Parser, Trailing(..), float, int, lazy, oneOf, sequence, spaces, succeed, token)
 
 
 type Inst
-    = Forward Int
-    | Left Int
-    | Right Int
+    = Forward Float
+    | Left Float
+    | Right Float
     | Repeat Int (List Inst)
 
 
@@ -18,21 +18,21 @@ pForward =
     succeed Forward
         |. token "Forward"
         |. spaces
-        |= int
+        |= float
 
 
 pLeft =
     succeed Left
         |. token "Left"
         |. spaces
-        |= int
+        |= float
 
 
 pRight =
     succeed Right
         |. token "Right"
         |. spaces
-        |= int
+        |= float
 
 
 pRepeat =
