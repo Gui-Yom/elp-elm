@@ -4,6 +4,7 @@ import Browser
 import Html exposing (Html, div, li, p, text, textarea, ul)
 import Html.Attributes exposing (autofocus, class, cols, id, placeholder, rows, value)
 import Html.Events exposing (onInput)
+import LocalStorage exposing (saveProgText)
 import Parser exposing (DeadEnd)
 import Program exposing (Inst(..), Program, pProgram)
 import Svg exposing (Svg, line, svg)
@@ -15,7 +16,7 @@ import Svg.Attributes exposing (height, style, viewBox, width, x1, x2, y1, y2)
 
 
 main =
-    Browser.sandbox { init = init, update = update, view = view }
+    Browser.element { init = init, update = update, view = view, subscriptions = \_ -> Sub.none }
 
 
 
@@ -26,9 +27,9 @@ type alias Model =
     { progText : String, lastSuccessful : Maybe Program, error : Maybe (List DeadEnd) }
 
 
-init : Model
-init =
-    { progText = "", lastSuccessful = Nothing, error = Nothing }
+init : Maybe String -> ( Model, Cmd Msg )
+init flags =
+    ( { progText = Maybe.withDefault "" flags, lastSuccessful = Nothing, error = Nothing }, Cmd.none )
 
 
 
@@ -39,7 +40,7 @@ type Msg
     = ProgramTextUpdated String
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ProgramTextUpdated newProgText ->
@@ -47,7 +48,7 @@ update msg model =
                 result =
                     Parser.run pProgram newProgText
             in
-            { model
+            ( { model
                 | progText = newProgText
                 , lastSuccessful =
                     case result of
@@ -63,7 +64,9 @@ update msg model =
 
                         Err err ->
                             Just err
-            }
+              }
+            , saveProgText newProgText
+            )
 
 
 

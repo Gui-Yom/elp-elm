@@ -1,9 +1,7 @@
 # elp-elm
 
-## Developping
+## Dev
 
-Run `elm reactor`
+Il est recommandé d'utiliser elm-live :
 
-## Building
-
-Run `elm make src/Main.elm`
+`$ elm-live src/Main.elm -o -d src -- --output src/index.js`
