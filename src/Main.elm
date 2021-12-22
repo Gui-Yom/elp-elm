@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Html exposing (Html, div, li, p, text, textarea, ul)
-import Html.Attributes exposing (autofocus, cols, placeholder, rows, value)
+import Html.Attributes exposing (autofocus, class, cols, id, placeholder, rows, value)
 import Html.Events exposing (onInput)
 import Parser exposing (DeadEnd)
 import Program exposing (Inst(..), Program, pProgram)
@@ -72,7 +72,7 @@ update msg model =
 
 programList : Program -> Html Msg
 programList prog =
-    ul []
+    ul [ id "programList" ]
         (List.map
             (\inst ->
                 case inst of
@@ -145,35 +145,33 @@ correctAngle angle =
 
 view : Model -> Html Msg
 view model =
-    div [ style "display: flex; justify-content: space-around; height: 600px; align-content: stretch;" ]
-        [ div [ style "flex: 0 0 50%; margin-top: 20px" ]
+    div [ id "root" ]
+        [ div [ class "column" ]
             [ textarea
-                [ placeholder "Program text"
+                [ id "codeEditor"
+                , placeholder "Program text"
                 , value model.progText
                 , onInput ProgramTextUpdated
                 , autofocus True
                 , cols 80
-                , rows 30
-                , style "font-family: monospace; font-size: 13px"
+                , rows 10
                 ]
                 []
-            , p []
-                [ case model.error of
-                    Just err ->
-                        text ("Error: " ++ Debug.toString err)
+            , case model.error of
+                Just err ->
+                    p [ id "errorMsg" ] [ text ("Error: " ++ Debug.toString err) ]
 
-                    Nothing ->
-                        case model.lastSuccessful of
-                            Just prog ->
-                                programList prog
+                Nothing ->
+                    case model.lastSuccessful of
+                        Just prog ->
+                            programList prog
 
-                            Nothing ->
-                                text "Please enter a program"
-                ]
+                        Nothing ->
+                            p [ id "errorMsg" ] [ text "Please enter a program" ]
             ]
-        , div [ style "flex: 0 0 500px; margin-top: 20px" ]
+        , div [ class "column" ]
             [ svg
-                [ width "500", height "500", viewBox "0 0 500 500" ]
+                [ id "canvas", width "500", height "500", viewBox "0 0 500 500" ]
                 (case model.lastSuccessful of
                     Just prog ->
                         drawProgram prog { x = 250, y = 250, angle = 0 }

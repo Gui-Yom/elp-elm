@@ -1,0 +1,22 @@
+#root {
+    display: flex;
+    justify-content: space-around;
+    height: 600px;
+    align-content: stretch;
+}
+
+.column {
+    flex: 0 0 40%;
+    padding: 20px;
+}
+
+#codeEditor {
+    font-family: monospace;
+    font-size: 13px;
+}
+
+#canvas {
+    border-style: solid;
+    border-width: thin;
+    border-color: blueviolet;
+}
