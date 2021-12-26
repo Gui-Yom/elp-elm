@@ -106,7 +106,6 @@ view model prog =
                         , showProc model proc
                         ]
                 )
-                (Dict.toList prog.procs)
+                (Dict.toList prog)
             )
-        , showProc model prog.main
         ]

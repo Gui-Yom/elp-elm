@@ -1,7 +1,7 @@
-module Program exposing (Inst(..), Proc, Program, parseProgram)
+module Program exposing (Inst(..), ParseError, Proc, Program, parseProgram)
 
 import Dict exposing (Dict)
-import Parser exposing ((|.), (|=), Parser, Step(..), Trailing(..), float, int, lazy, loop, map, oneOf, sequence, spaces, succeed, token, variable)
+import Parser exposing ((|.), (|=), DeadEnd, Parser, Step(..), Trailing(..), float, int, lazy, loop, map, oneOf, sequence, spaces, succeed, token, variable)
 import Set
 
 
@@ -24,7 +24,7 @@ type alias Proc =
 
 
 type alias Program =
-    { procs : Dict String Proc, main : Proc }
+    Dict String Proc
 
 
 pForward =
@@ -72,6 +72,7 @@ pCall =
         |= pIdentifier
 
 
+pInst : Parser Inst
 pInst =
     oneOf [ pForward, pLeft, pRight, pRepeat, pCall ]
 
@@ -81,6 +82,7 @@ pInst =
     [ Forward 5, Right 3, Repeat 4 [ Forward 5, Call circle ] ]
 
 -}
+pProc : Parser Proc
 pProc =
     sequence { start = "[", separator = ",", end = "]", spaces = spaces, item = pInst, trailing = Optional }
 
@@ -92,8 +94,10 @@ pProc =
     [ Repeat 6 [ Forward 10, Call circle ] ]
 
 -}
+pProgram : Parser Program
 pProgram =
-    succeed Program
+    succeed identity
+        |. spaces
         |= loop Dict.empty
             (\procs ->
                 oneOf
@@ -101,13 +105,39 @@ pProgram =
                         |= pIdentifier
                         |. spaces
                         |= pProc
+                        |. spaces
+                    , succeed (\proc -> Loop (Dict.insert "main" proc procs))
+                        |= pProc
                     , succeed ()
                         |> map (\_ -> Done procs)
                     ]
             )
-        |. spaces
-        |= pProc
 
 
+
+-- TODO(guillaume) use advanced parser (Parser.Advanced) to check for errors while parsing
+
+
+type ParseError
+    = SyntaxError DeadEnd
+    | UnknownProc String
+    | NoMain
+
+
+checkProgram : Program -> Result (List ParseError) Program
+checkProgram prog =
+    if Dict.member "main" prog then
+        Ok prog
+
+    else
+        Err [ NoMain ]
+
+
+parseProgram : String -> Result (List ParseError) Program
 parseProgram text =
-    Parser.run pProgram text
+    case Parser.run pProgram text of
+        Err err ->
+            Err (List.map (\e -> SyntaxError e) err)
+
+        Ok prog ->
+            checkProgram prog

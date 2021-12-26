@@ -27,11 +27,6 @@ correctAngle angle =
         angle
 
 
-drawProgram : Program -> Cursor -> List (Svg msg)
-drawProgram prog cursor =
-    drawProc prog prog.main cursor
-
-
 drawProc : Program -> Proc -> Cursor -> List (Svg msg)
 drawProc prog proc cursor =
     case proc of
@@ -73,7 +68,7 @@ drawProc prog proc cursor =
                         drawProc prog (toRepeat ++ [ Repeat (n - 1) toRepeat ] ++ subProc) cursor
 
                 Call procName ->
-                    drawProc prog (Maybe.withDefault [] (Dict.get procName prog.procs) ++ subProc) cursor
+                    drawProc prog (Maybe.withDefault [] (Dict.get procName prog) ++ subProc) cursor
 
 
 view : Maybe Program -> Html msg
@@ -82,7 +77,7 @@ view mprog =
         [ id "canvas", width "500", height "500", viewBox "0 0 500 500" ]
         (case mprog of
             Just prog ->
-                drawProgram prog { x = 250, y = 250, angle = 0 }
+                drawProc prog (Maybe.withDefault [] (Dict.get "main" prog)) { x = 250, y = 250, angle = 0 }
 
             Nothing ->
                 []

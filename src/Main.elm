@@ -2,13 +2,12 @@ module Main exposing (main)
 
 import Browser
 import Canvas
-import Html exposing (Html, div, p, text, textarea)
+import Html exposing (Html, div, li, p, text, textarea, ul)
 import Html.Attributes exposing (autofocus, class, cols, id, placeholder, rows, value)
 import Html.Events exposing (onInput)
 import Html.Lazy exposing (lazy, lazy2)
 import LocalStorage exposing (saveProgText)
-import Parser exposing (DeadEnd)
-import Program exposing (Inst(..), Proc, Program, parseProgram)
+import Program exposing (Inst(..), ParseError, Proc, Program, parseProgram)
 import ProgramList
 
 
@@ -25,7 +24,7 @@ main =
 
 
 type alias Model =
-    { progText : String, lastSuccessful : Maybe Program, error : Maybe (List DeadEnd), plModel : ProgramList.Model }
+    { progText : String, lastSuccessful : Maybe Program, error : Maybe (List ParseError), plModel : ProgramList.Model }
 
 
 init : Maybe String -> ( Model, Cmd Msg )
@@ -95,7 +94,7 @@ view model =
                 []
             , case model.error of
                 Just err ->
-                    p [ id "errorMsg" ] [ text ("Error: " ++ Debug.toString err) ]
+                    p [ id "errorList" ] [ ul [] (List.map (\e -> li [] [ text ("Error: " ++ Debug.toString e) ]) err) ]
 
                 Nothing ->
                     case model.lastSuccessful of
@@ -103,7 +102,7 @@ view model =
                             Html.map (\plmsg -> ProgramListMsg plmsg) (lazy2 ProgramList.view model.plModel prog)
 
                         Nothing ->
-                            p [ id "errorMsg" ] [ text "Please enter a program" ]
+                            p [] [ text "Please enter a program" ]
             ]
         , div [ class "column" ] [ lazy Canvas.view model.lastSuccessful ]
         ]
