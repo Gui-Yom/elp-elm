@@ -1,12 +1,13 @@
 module Main exposing (main)
 
 import Browser
+import Dict
 import Html exposing (Html, div, li, p, text, textarea, ul)
 import Html.Attributes exposing (autofocus, class, cols, id, placeholder, rows, value)
 import Html.Events exposing (onInput)
 import LocalStorage exposing (saveProgText)
 import Parser exposing (DeadEnd)
-import Program exposing (Inst(..), Program, pProgram)
+import Program exposing (Inst(..), Proc, Program, parseProgram)
 import Svg exposing (Svg, line, svg)
 import Svg.Attributes exposing (height, style, viewBox, width, x1, x2, y1, y2)
 
@@ -46,7 +47,7 @@ update msg model =
         ProgramTextUpdated newProgText ->
             let
                 result =
-                    Parser.run pProgram newProgText
+                    parseProgram newProgText
             in
             ( { model
                 | progText = newProgText
@@ -70,23 +71,40 @@ update msg model =
 
 
 
--- VIEW
+-- VIEW (Show Program)
 
 
-programList : Program -> Html Msg
-programList prog =
-    ul [ id "programList" ]
+showProgram : Program -> List (Html Msg)
+showProgram prog =
+    [ ul []
+        (List.map
+            (\tuple ->
+                li [] [ text (Tuple.first tuple), showProc (Tuple.second tuple) ]
+            )
+            (Dict.toList prog.procs)
+        )
+    , showProc prog.main
+    ]
+
+
+showProc : Proc -> Html Msg
+showProc proc =
+    ul []
         (List.map
             (\inst ->
                 case inst of
                     Repeat n subProg ->
-                        li [] [ text ("Repeat " ++ String.fromInt n), programList subProg ]
+                        li [] [ text ("Repeat " ++ String.fromInt n), showProc subProg ]
 
                     other ->
                         li [] [ text (Debug.toString other) ]
             )
-            prog
+            proc
         )
+
+
+
+-- VIEW (Draw Program)
 
 
 type alias Cursor =
@@ -95,19 +113,17 @@ type alias Cursor =
 
 drawProgram : Program -> Cursor -> List (Svg msg)
 drawProgram prog cursor =
-    case prog of
+    drawProc prog prog.main cursor
+
+
+drawProc : Program -> Proc -> Cursor -> List (Svg msg)
+drawProc prog proc cursor =
+    case proc of
         [] ->
             []
 
-        inst :: subprog ->
+        inst :: subProc ->
             case inst of
-                Repeat n toRepeat ->
-                    if n <= 1 then
-                        drawProgram (toRepeat ++ subprog) cursor
-
-                    else
-                        drawProgram (toRepeat ++ [ Repeat (n - 1) toRepeat ] ++ subprog) cursor
-
                 Forward length ->
                     let
                         newCursor =
@@ -125,13 +141,27 @@ drawProgram prog cursor =
                         ]
                         []
                     ]
-                        ++ drawProgram subprog newCursor
+                        ++ drawProc prog subProc newCursor
 
                 Left n ->
-                    drawProgram subprog { cursor | angle = correctAngle (cursor.angle - n) }
+                    drawProc prog subProc { cursor | angle = correctAngle (cursor.angle - n) }
 
                 Right n ->
-                    drawProgram subprog { cursor | angle = correctAngle (cursor.angle + n) }
+                    drawProc prog subProc { cursor | angle = correctAngle (cursor.angle + n) }
+
+                Repeat n toRepeat ->
+                    if n <= 1 then
+                        drawProc prog (toRepeat ++ subProc) cursor
+
+                    else
+                        drawProc prog (toRepeat ++ [ Repeat (n - 1) toRepeat ] ++ subProc) cursor
+
+                Call procName ->
+                    drawProc prog (Maybe.withDefault [] (Dict.get procName prog.procs) ++ subProc) cursor
+
+
+
+-- TODO proc call
 
 
 correctAngle : Float -> Float
@@ -144,6 +174,10 @@ correctAngle angle =
 
     else
         angle
+
+
+
+-- MAIN VIEW
 
 
 view : Model -> Html Msg
@@ -167,7 +201,7 @@ view model =
                 Nothing ->
                     case model.lastSuccessful of
                         Just prog ->
-                            programList prog
+                            p [] (showProgram prog)
 
                         Nothing ->
                             p [ id "errorMsg" ] [ text "Please enter a program" ]
