@@ -20,3 +20,35 @@
     border-width: thin;
     border-color: blueviolet;
 }
+
+#errorMsg {
+    border-style: solid;
+    border-width: thin;
+    border-color: red;
+}
+
+#programList {
+    border-style: solid;
+    border-width: thin;
+    border-color: green;
+}
+
+.procDef {
+    font-weight: bolder;
+}
+
+.procDef:hover {
+    background-color: aqua;
+}
+
+.procRef {
+    text-decoration-line: underline;
+}
+
+.procRef:hover {
+    background-color: aqua;
+}
+
+.procHover {
+    background-color: aqua;
+}
