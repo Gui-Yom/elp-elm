@@ -11,26 +11,54 @@
 }
 
 #codeEditor {
-    font-family: monospace;
-    font-size: 13px;
+    font-family: "Cascadia Mono", Menlo, "Ubuntu Mono", monospace;
+    font-size: small;
+    resize: vertical;
 }
 
 #canvas {
     border-style: solid;
     border-width: thin;
-    border-color: blueviolet;
+    border-color: fuchsia;
+    border-radius: 5px;
+    background-color: #111111;
 }
 
 #errorList {
-    border-style: solid;
+    border-style: dashed;
     border-width: thin;
     border-color: red;
 }
 
+#errorList li {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#errorList li::before {
+    content: '\26A0';
+    margin-left: -20px;
+    margin-right: 10px;
+}
+
 #programList {
-    border-style: solid;
+    border-style: dashed;
     border-width: thin;
     border-color: green;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    font-family: "Cascadia Mono", Menlo, "Ubuntu Mono", monospace;
+    font-size: small;
+}
+
+#programList ul {
+    padding-left: 20px;
+    border-left: medium solid grey;
+}
+
+.procList li {
+    list-style-type: none;
 }
 
 .procDef {

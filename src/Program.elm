@@ -1,7 +1,7 @@
-module Program exposing (Inst(..), ParseError, Proc, Program, parseProgram)
+module Program exposing (Inst(..), Proc, Program, ProgramError(..), parseProgram)
 
 import Dict exposing (Dict)
-import Parser exposing ((|.), (|=), DeadEnd, Parser, Step(..), Trailing(..), float, int, lazy, loop, map, oneOf, sequence, spaces, succeed, token, variable)
+import Parser as P exposing ((|.), (|=), DeadEnd, Parser, Step, Trailing(..), float, int, lazy, loop, map, oneOf, sequence, spaces, succeed, token, variable)
 import Set
 
 
@@ -101,15 +101,15 @@ pProgram =
         |= loop Dict.empty
             (\procs ->
                 oneOf
-                    [ succeed (\identifier proc -> Loop (Dict.insert identifier proc procs))
+                    [ succeed (\identifier proc -> P.Loop (Dict.insert identifier proc procs))
                         |= pIdentifier
                         |. spaces
                         |= pProc
                         |. spaces
-                    , succeed (\proc -> Loop (Dict.insert "main" proc procs))
+                    , succeed (\proc -> P.Loop (Dict.insert "main" proc procs))
                         |= pProc
                     , succeed ()
-                        |> map (\_ -> Done procs)
+                        |> map (\_ -> P.Done procs)
                     ]
             )
 
@@ -118,26 +118,61 @@ pProgram =
 -- TODO(guillaume) use advanced parser (Parser.Advanced) to check for errors while parsing
 
 
-type ParseError
+type ProgramError
     = SyntaxError DeadEnd
     | UnknownProc String
+    | Loop String
     | NoMain
 
 
-checkProgram : Program -> Result (List ParseError) Program
+{-| Check the program for errors other than syntax errors
+-}
+checkProgram : Program -> List ProgramError
 checkProgram prog =
-    if Dict.member "main" prog then
-        Ok prog
+    -- Check for main procedure existence
+    (if Dict.member "main" prog then
+        []
 
-    else
-        Err [ NoMain ]
+     else
+        [ NoMain ]
+    )
+        -- Check for errors with instructions
+        ++ Dict.foldl
+            (\name proc errors ->
+                errors
+                    ++ List.foldl
+                        (\inst procErrors ->
+                            procErrors
+                                ++ (case inst of
+                                        Call callee ->
+                                            -- Check the call refer to an existing procedure
+                                            if Dict.member callee prog then
+                                                -- Check for a simple loop
+                                                if callee == name then
+                                                    [ Loop callee ]
+
+                                                else
+                                                    []
+
+                                            else
+                                                [ UnknownProc callee ]
+
+                                        _ ->
+                                            []
+                                   )
+                        )
+                        []
+                        proc
+            )
+            []
+            prog
 
 
-parseProgram : String -> Result (List ParseError) Program
+parseProgram : String -> ( Maybe Program, List ProgramError )
 parseProgram text =
-    case Parser.run pProgram text of
+    case P.run pProgram text of
         Err err ->
-            Err (List.map (\e -> SyntaxError e) err)
+            ( Nothing, List.map (\e -> SyntaxError e) err )
 
         Ok prog ->
-            checkProgram prog
+            ( Just prog, checkProgram prog )

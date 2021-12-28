@@ -1,7 +1,7 @@
-module ProgramList exposing (..)
+module ProgramList exposing (Model, Msg, init, update, view)
 
 import Dict
-import Html exposing (Html, li, p, span, text, ul)
+import Html exposing (Html, li, span, text, ul)
 import Html.Attributes exposing (class, classList, id)
 import Html.Events exposing (onMouseOut, onMouseOver)
 import Program exposing (Inst(..), Proc, Program)
@@ -83,29 +83,27 @@ showProc model proc =
 
 view : Model -> Program -> Html Msg
 view model prog =
-    p [ id "programList" ]
-        [ ul []
-            (List.map
-                (\tuple ->
-                    let
-                        ( name, proc ) =
-                            tuple
-                    in
-                    li []
-                        [ span
-                            [ classList
-                                [ ( "procDef", True )
-                                , ( "procHover", Maybe.withDefault False (Maybe.map (\def -> def == name) model.procRefHovered) )
-                                ]
-
-                            -- Events
-                            , onMouseOver (ProcDefHover name)
-                            , onMouseOut MouseOut
+    ul [ id "programList" ]
+        (List.map
+            (\tuple ->
+                let
+                    ( name, proc ) =
+                        tuple
+                in
+                li []
+                    [ span
+                        [ classList
+                            [ ( "procDef", True )
+                            , ( "procHover", Maybe.withDefault False (Maybe.map (\def -> def == name) model.procRefHovered) )
                             ]
-                            [ text name ]
-                        , showProc model proc
+
+                        -- Events
+                        , onMouseOver (ProcDefHover name)
+                        , onMouseOut MouseOut
                         ]
-                )
-                (Dict.toList prog)
+                        [ text name ]
+                    , showProc model proc
+                    ]
             )
-        ]
+            (Dict.toList prog)
+        )

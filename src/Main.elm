@@ -2,12 +2,13 @@ module Main exposing (main)
 
 import Browser
 import Canvas
-import Html exposing (Html, div, li, p, text, textarea, ul)
-import Html.Attributes exposing (autofocus, class, cols, id, placeholder, rows, value)
+import ErrorList
+import Html exposing (Html, div, h1, h2, p, text, textarea)
+import Html.Attributes exposing (autofocus, class, cols, id, placeholder, rows, spellcheck, value)
 import Html.Events exposing (onInput)
 import Html.Lazy exposing (lazy, lazy2)
 import LocalStorage exposing (saveProgText)
-import Program exposing (Inst(..), ParseError, Proc, Program, parseProgram)
+import Program exposing (Inst(..), Proc, Program, ProgramError, parseProgram)
 import ProgramList
 
 
@@ -24,13 +25,13 @@ main =
 
 
 type alias Model =
-    { progText : String, lastSuccessful : Maybe Program, error : Maybe (List ParseError), plModel : ProgramList.Model }
+    { progText : String, valid : Maybe Program, current : Maybe Program, errors : List ProgramError, plModel : ProgramList.Model }
 
 
 init : Maybe String -> ( Model, Cmd Msg )
 init flags =
     update (ProgramTextUpdated (Maybe.withDefault "" flags))
-        { progText = "", lastSuccessful = Nothing, error = Nothing, plModel = ProgramList.init }
+        { progText = "", valid = Nothing, current = Nothing, errors = [], plModel = ProgramList.init }
 
 
 
@@ -50,25 +51,30 @@ update msg model =
 
         ProgramTextUpdated newProgText ->
             let
-                result =
+                -- Try parsing the new program
+                ( mprog, errors ) =
                     parseProgram newProgText
             in
             ( { model
                 | progText = newProgText
-                , lastSuccessful =
-                    case result of
-                        Ok prog ->
+
+                -- Parsed program, no matter the errors
+                , current =
+                    case mprog of
+                        Just prog ->
                             Just prog
 
-                        Err _ ->
-                            model.lastSuccessful
-                , error =
-                    case result of
-                        Ok _ ->
-                            Nothing
+                        Nothing ->
+                            model.current
+                , valid =
+                    if List.isEmpty errors then
+                        -- If there are no detected errors we can run the program
+                        mprog
 
-                        Err err ->
-                            Just err
+                    else
+                        -- If there are errors, we keep the last valid program
+                        model.valid
+                , errors = errors
               }
             , saveProgText newProgText
             )
@@ -82,7 +88,7 @@ view : Model -> Html Msg
 view model =
     div [ id "root" ]
         [ div [ class "column" ]
-            [ textarea
+            ([ textarea
                 [ id "codeEditor"
                 , placeholder "Program text"
                 , value model.progText
@@ -90,19 +96,33 @@ view model =
                 , autofocus True
                 , cols 80
                 , rows 10
+                , spellcheck False
                 ]
                 []
-            , case model.error of
-                Just err ->
-                    p [ id "errorList" ] [ ul [] (List.map (\e -> li [] [ text ("Error: " ++ Debug.toString e) ]) err) ]
+             ]
+                ++ (if List.isEmpty model.errors then
+                        []
 
-                Nothing ->
-                    case model.lastSuccessful of
+                    else
+                        [ ErrorList.view model.errors ]
+                   )
+                ++ (case model.current of
                         Just prog ->
-                            Html.map (\plmsg -> ProgramListMsg plmsg) (lazy2 ProgramList.view model.plModel prog)
+                            [ Html.map (\plmsg -> ProgramListMsg plmsg) (lazy2 ProgramList.view model.plModel prog) ]
 
                         Nothing ->
-                            p [] [ text "Please enter a program" ]
-            ]
-        , div [ class "column" ] [ lazy Canvas.view model.lastSuccessful ]
+                            []
+                   )
+                ++ [ p [ id "manual" ]
+                        [ h1 [] [ text "Manuel" ]
+                        , h2 [] [ text "Programme" ]
+                        , p [] [ text "procName [instructions ...]" ]
+                        , h2 [] [ text "Instructions" ]
+                        , p [] [ text "Forward, Left, Right, Repeat, Call" ]
+                        ]
+                   ]
+            )
+
+        -- TODO(guillaume) il faut trouver un moyen d'indiquer quand les composants ne sont plus à jour
+        , div [ class "column" ] [ lazy Canvas.view model.valid ]
         ]
