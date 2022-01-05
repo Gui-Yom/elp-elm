@@ -23,6 +23,8 @@ type alias Proc =
     List Inst
 
 
+{-| A Program is a set of named procedures
+-}
 type alias Program =
     Dict String Proc
 

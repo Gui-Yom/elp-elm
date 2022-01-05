@@ -17,17 +17,13 @@
 }
 
 #canvas {
-    border-style: solid;
-    border-width: thin;
-    border-color: fuchsia;
+    border: thin solid fuchsia;
     border-radius: 5px;
     background-color: #111111;
 }
 
 #errorList {
-    border-style: dashed;
-    border-width: thin;
-    border-color: red;
+    border: thin dashed red;
 }
 
 #errorList li {
@@ -43,9 +39,7 @@
 }
 
 #programList {
-    border-style: dashed;
-    border-width: thin;
-    border-color: green;
+    border: thin dashed green;
     padding-top: 10px;
     padding-bottom: 10px;
     font-family: "Cascadia Mono", Menlo, "Ubuntu Mono", monospace;
@@ -79,4 +73,9 @@
 
 .procHover {
     background-color: aqua;
+}
+
+.codeDisplay {
+    font-family: "Cascadia Mono", Menlo, "Ubuntu Mono", monospace;
+    font-size: small;
 }

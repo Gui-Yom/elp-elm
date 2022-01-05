@@ -3,7 +3,7 @@ module Main exposing (main)
 import Browser
 import Canvas
 import ErrorList
-import Html exposing (Html, div, h1, h2, p, text, textarea)
+import Html exposing (Html, br, code, div, h1, h2, p, pre, text, textarea)
 import Html.Attributes exposing (autofocus, class, cols, id, placeholder, rows, spellcheck, value)
 import Html.Events exposing (onInput)
 import Html.Lazy exposing (lazy, lazy2)
@@ -116,9 +116,15 @@ view model =
                 ++ [ p [ id "manual" ]
                         [ h1 [] [ text "Manuel" ]
                         , h2 [] [ text "Programme" ]
-                        , p [] [ text "procName [instructions ...]" ]
-                        , h2 [] [ text "Instructions" ]
-                        , p [] [ text "Forward, Left, Right, Repeat, Call" ]
+                        , p []
+                            [ text "instruction: Forward n | Left n | Right n | Repeat n proc | Call name"
+                            , br [] []
+                            , text "proc: [instruction,...]"
+                            , br [] []
+                            , text "procDef: name proc"
+                            ]
+                        , h2 [] [ text "Exemple" ]
+                        , pre [] [ code [ class "codeDisplay" ] [ text "circle [Repeat 15 [Forward 10, Left 24]]", br [] [], text "[Call circle]" ] ]
                         ]
                    ]
             )
