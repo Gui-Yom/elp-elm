@@ -6654,6 +6654,7 @@ var $elm$html$Html$Attributes$boolProperty = F2(
 			$elm$json$Json$Encode$bool(bool));
 	});
 var $elm$html$Html$Attributes$autofocus = $elm$html$Html$Attributes$boolProperty('autofocus');
+var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
@@ -6662,6 +6663,7 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 			$elm$json$Json$Encode$string(string));
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
+var $elm$html$Html$code = _VirtualDom_node('code');
 var $elm$html$Html$Attributes$cols = function (n) {
 	return A2(
 		_VirtualDom_attribute,
@@ -6713,6 +6715,7 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 };
 var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $elm$html$Html$pre = _VirtualDom_node('pre');
 var $elm$html$Html$Attributes$rows = function (n) {
 	return A2(
 		_VirtualDom_attribute,
@@ -7199,21 +7202,36 @@ var $author$project$Main$view = function (model) {
 											_List_Nil,
 											_List_fromArray(
 												[
-													$elm$html$Html$text('procName [instructions ...]')
+													$elm$html$Html$text('instruction: Forward n | Left n | Right n | Repeat n proc | Call name'),
+													A2($elm$html$Html$br, _List_Nil, _List_Nil),
+													$elm$html$Html$text('proc: [instruction,...]'),
+													A2($elm$html$Html$br, _List_Nil, _List_Nil),
+													$elm$html$Html$text('procDef: name proc')
 												])),
 											A2(
 											$elm$html$Html$h2,
 											_List_Nil,
 											_List_fromArray(
 												[
-													$elm$html$Html$text('Instructions')
+													$elm$html$Html$text('Exemple')
 												])),
 											A2(
-											$elm$html$Html$p,
+											$elm$html$Html$pre,
 											_List_Nil,
 											_List_fromArray(
 												[
-													$elm$html$Html$text('Forward, Left, Right, Repeat, Call')
+													A2(
+													$elm$html$Html$code,
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$class('codeDisplay')
+														]),
+													_List_fromArray(
+														[
+															$elm$html$Html$text('circle [Repeat 15 [Forward 10, Left 24]]'),
+															A2($elm$html$Html$br, _List_Nil, _List_Nil),
+															$elm$html$Html$text('[Call circle]')
+														]))
 												]))
 										]))
 								]))))),
