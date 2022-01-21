@@ -5981,6 +5981,50 @@ var $elm$parser$Parser$Advanced$int = F2(
 			});
 	});
 var $elm$parser$Parser$int = A2($elm$parser$Parser$Advanced$int, $elm$parser$Parser$ExpectingInt, $elm$parser$Parser$ExpectingInt);
+var $elm$parser$Parser$ExpectingKeyword = function (a) {
+	return {$: 'ExpectingKeyword', a: a};
+};
+var $elm$parser$Parser$Advanced$Token = F2(
+	function (a, b) {
+		return {$: 'Token', a: a, b: b};
+	});
+var $elm$parser$Parser$Advanced$isSubString = _Parser_isSubString;
+var $elm$core$Basics$not = _Basics_not;
+var $elm$parser$Parser$Advanced$keyword = function (_v0) {
+	var kwd = _v0.a;
+	var expecting = _v0.b;
+	var progress = !$elm$core$String$isEmpty(kwd);
+	return $elm$parser$Parser$Advanced$Parser(
+		function (s) {
+			var _v1 = A5($elm$parser$Parser$Advanced$isSubString, kwd, s.offset, s.row, s.col, s.src);
+			var newOffset = _v1.a;
+			var newRow = _v1.b;
+			var newCol = _v1.c;
+			return (_Utils_eq(newOffset, -1) || (0 <= A3(
+				$elm$parser$Parser$Advanced$isSubChar,
+				function (c) {
+					return $elm$core$Char$isAlphaNum(c) || _Utils_eq(
+						c,
+						_Utils_chr('_'));
+				},
+				newOffset,
+				s.src))) ? A2(
+				$elm$parser$Parser$Advanced$Bad,
+				false,
+				A2($elm$parser$Parser$Advanced$fromState, s, expecting)) : A3(
+				$elm$parser$Parser$Advanced$Good,
+				progress,
+				_Utils_Tuple0,
+				{col: newCol, context: s.context, indent: s.indent, offset: newOffset, row: newRow, src: s.src});
+		});
+};
+var $elm$parser$Parser$keyword = function (kwd) {
+	return $elm$parser$Parser$Advanced$keyword(
+		A2(
+			$elm$parser$Parser$Advanced$Token,
+			kwd,
+			$elm$parser$Parser$ExpectingKeyword(kwd)));
+};
 var $elm$parser$Parser$Advanced$lazy = function (thunk) {
 	return $elm$parser$Parser$Advanced$Parser(
 		function (s) {
@@ -6057,21 +6101,22 @@ var $elm$parser$Parser$Advanced$succeed = function (a) {
 		});
 };
 var $elm$parser$Parser$succeed = $elm$parser$Parser$Advanced$succeed;
-var $elm$parser$Parser$Expecting = function (a) {
-	return {$: 'Expecting', a: a};
+var $author$project$Program$pCall = A2(
+	$elm$parser$Parser$keeper,
+	A2(
+		$elm$parser$Parser$ignorer,
+		A2(
+			$elm$parser$Parser$ignorer,
+			$elm$parser$Parser$succeed($author$project$Program$Call),
+			$elm$parser$Parser$keyword('Call')),
+		$elm$parser$Parser$spaces),
+	$author$project$Program$pIdentifier);
+var $author$project$Program$Color = function (a) {
+	return {$: 'Color', a: a};
 };
-var $elm$parser$Parser$Advanced$Token = F2(
-	function (a, b) {
-		return {$: 'Token', a: a, b: b};
-	});
-var $elm$parser$Parser$toToken = function (str) {
-	return A2(
-		$elm$parser$Parser$Advanced$Token,
-		str,
-		$elm$parser$Parser$Expecting(str));
+var $elm$parser$Parser$ExpectingSymbol = function (a) {
+	return {$: 'ExpectingSymbol', a: a};
 };
-var $elm$parser$Parser$Advanced$isSubString = _Parser_isSubString;
-var $elm$core$Basics$not = _Basics_not;
 var $elm$parser$Parser$Advanced$token = function (_v0) {
 	var str = _v0.a;
 	var expecting = _v0.b;
@@ -6091,26 +6136,6 @@ var $elm$parser$Parser$Advanced$token = function (_v0) {
 				_Utils_Tuple0,
 				{col: newCol, context: s.context, indent: s.indent, offset: newOffset, row: newRow, src: s.src});
 		});
-};
-var $elm$parser$Parser$token = function (str) {
-	return $elm$parser$Parser$Advanced$token(
-		$elm$parser$Parser$toToken(str));
-};
-var $author$project$Program$pCall = A2(
-	$elm$parser$Parser$keeper,
-	A2(
-		$elm$parser$Parser$ignorer,
-		A2(
-			$elm$parser$Parser$ignorer,
-			$elm$parser$Parser$succeed($author$project$Program$Call),
-			$elm$parser$Parser$token('Call')),
-		$elm$parser$Parser$spaces),
-	$author$project$Program$pIdentifier);
-var $author$project$Program$Color = function (a) {
-	return {$: 'Color', a: a};
-};
-var $elm$parser$Parser$ExpectingSymbol = function (a) {
-	return {$: 'ExpectingSymbol', a: a};
 };
 var $elm$parser$Parser$Advanced$symbol = $elm$parser$Parser$Advanced$token;
 var $elm$parser$Parser$symbol = function (str) {
@@ -6234,7 +6259,7 @@ var $author$project$Program$pColorInst = A2(
 		A2(
 			$elm$parser$Parser$ignorer,
 			$elm$parser$Parser$succeed($author$project$Program$Color),
-			$elm$parser$Parser$token('Color')),
+			$elm$parser$Parser$keyword('Color')),
 		$elm$parser$Parser$spaces),
 	$elm$parser$Parser$oneOf(
 		_List_fromArray(
@@ -6269,7 +6294,7 @@ var $author$project$Program$pForward = A2(
 		A2(
 			$elm$parser$Parser$ignorer,
 			$elm$parser$Parser$succeed($author$project$Program$Forward),
-			$elm$parser$Parser$token('Forward')),
+			$elm$parser$Parser$keyword('Forward')),
 		$elm$parser$Parser$spaces),
 	$elm$parser$Parser$float);
 var $author$project$Program$Left = function (a) {
@@ -6282,7 +6307,7 @@ var $author$project$Program$pLeft = A2(
 		A2(
 			$elm$parser$Parser$ignorer,
 			$elm$parser$Parser$succeed($author$project$Program$Left),
-			$elm$parser$Parser$token('Left')),
+			$elm$parser$Parser$keyword('Left')),
 		$elm$parser$Parser$spaces),
 	$elm$parser$Parser$float);
 var $author$project$Program$Right = function (a) {
@@ -6295,7 +6320,20 @@ var $author$project$Program$pRight = A2(
 		A2(
 			$elm$parser$Parser$ignorer,
 			$elm$parser$Parser$succeed($author$project$Program$Right),
-			$elm$parser$Parser$token('Right')),
+			$elm$parser$Parser$keyword('Right')),
+		$elm$parser$Parser$spaces),
+	$elm$parser$Parser$float);
+var $author$project$Program$Width = function (a) {
+	return {$: 'Width', a: a};
+};
+var $author$project$Program$pWidth = A2(
+	$elm$parser$Parser$keeper,
+	A2(
+		$elm$parser$Parser$ignorer,
+		A2(
+			$elm$parser$Parser$ignorer,
+			$elm$parser$Parser$succeed($author$project$Program$Width),
+			$elm$parser$Parser$keyword('Width')),
 		$elm$parser$Parser$spaces),
 	$elm$parser$Parser$float);
 var $elm$parser$Parser$Advanced$andThen = F2(
@@ -6514,6 +6552,15 @@ var $elm$parser$Parser$toAdvancedTrailing = function (trailing) {
 			return $elm$parser$Parser$Advanced$Mandatory;
 	}
 };
+var $elm$parser$Parser$Expecting = function (a) {
+	return {$: 'Expecting', a: a};
+};
+var $elm$parser$Parser$toToken = function (str) {
+	return A2(
+		$elm$parser$Parser$Advanced$Token,
+		str,
+		$elm$parser$Parser$Expecting(str));
+};
 var $elm$parser$Parser$sequence = function (i) {
 	return $elm$parser$Parser$Advanced$sequence(
 		{
@@ -6545,7 +6592,8 @@ function $author$project$Program$cyclic$pInst() {
 				$author$project$Program$pRight,
 				$author$project$Program$cyclic$pRepeat(),
 				$author$project$Program$pCall,
-				$author$project$Program$pColorInst
+				$author$project$Program$pColorInst,
+				$author$project$Program$pWidth
 			]));
 }
 function $author$project$Program$cyclic$pRepeat() {
@@ -6558,7 +6606,7 @@ function $author$project$Program$cyclic$pRepeat() {
 				A2(
 					$elm$parser$Parser$ignorer,
 					$elm$parser$Parser$succeed($author$project$Program$Repeat),
-					$elm$parser$Parser$token('Repeat')),
+					$elm$parser$Parser$keyword('Repeat')),
 				$elm$parser$Parser$spaces),
 			A2($elm$parser$Parser$ignorer, $elm$parser$Parser$int, $elm$parser$Parser$spaces)),
 		$elm$parser$Parser$lazy(
@@ -6911,7 +6959,8 @@ var $author$project$Canvas$drawProc = F3(
 											$elm$core$String$fromFloat(newCursor.x)),
 											$elm$svg$Svg$Attributes$y2(
 											$elm$core$String$fromFloat(newCursor.y)),
-											$elm$svg$Svg$Attributes$style('stroke:' + (cursor.color + ';stroke-width:2'))
+											$elm$svg$Svg$Attributes$style(
+											'stroke:' + (cursor.color + (';stroke-width:' + $elm$core$String$fromFloat(cursor.width))))
 										]),
 									_List_Nil)
 								]),
@@ -6983,13 +7032,24 @@ var $author$project$Canvas$drawProc = F3(
 						proc = $temp$proc;
 						cursor = $temp$cursor;
 						continue drawProc;
-					default:
+					case 'Color':
 						var col = inst.a;
 						var $temp$prog = prog,
 							$temp$proc = subProc,
 							$temp$cursor = _Utils_update(
 							cursor,
 							{color: col});
+						prog = $temp$prog;
+						proc = $temp$proc;
+						cursor = $temp$cursor;
+						continue drawProc;
+					default:
+						var width = inst.a;
+						var $temp$prog = prog,
+							$temp$proc = subProc,
+							$temp$cursor = _Utils_update(
+							cursor,
+							{width: width});
 						prog = $temp$prog;
 						proc = $temp$proc;
 						cursor = $temp$cursor;
@@ -7023,7 +7083,7 @@ var $author$project$Canvas$view = function (mprog) {
 						$elm$core$Maybe$withDefault,
 						_List_Nil,
 						A2($elm$core$Dict$get, 'main', prog)),
-					{angle: 0, color: '#FF0000', x: 250, y: 250});
+					{angle: 0, color: '#FF0000', width: 2, x: 250, y: 250});
 			} else {
 				return _List_Nil;
 			}
@@ -7132,7 +7192,7 @@ var $author$project$Manual$view = A2(
 			_List_Nil,
 			_List_fromArray(
 				[
-					$elm$html$Html$text('instruction: Forward n | Left n | Right n | Repeat n proc | Call name | Color color'),
+					$elm$html$Html$text('instruction: Forward float | Left float | Right float | Repeat int proc | Call name | Color color | Width float'),
 					$author$project$Manual$br,
 					$elm$html$Html$text('proc: [instruction,...]'),
 					$author$project$Manual$br,
