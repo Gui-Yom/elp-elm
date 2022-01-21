@@ -1,7 +1,7 @@
 module Program exposing (Inst(..), Proc, Program, ProgramError(..), parseProgram)
 
 import Dict exposing (Dict)
-import Parser as P exposing ((|.), (|=), DeadEnd, Parser, Step, Trailing(..), float, int, lazy, loop, map, oneOf, sequence, spaces, succeed, token, variable)
+import Parser as P exposing ((|.), (|=), DeadEnd, Parser, Step, Trailing(..), chompIf, chompWhile, float, getChompedString, int, lazy, loop, map, oneOf, sequence, spaces, succeed, symbol, token, variable)
 import Set
 
 
@@ -15,6 +15,7 @@ type Inst
     | Repeat Int Proc
       -- Call a procedure by its name
     | Call String
+    | Color String
 
 
 {-| Procedure aka list of instructions
@@ -74,9 +75,51 @@ pCall =
         |= pIdentifier
 
 
+{-| Should parse :
+
+    #11FADB
+
+-}
+pColorHex =
+    getChompedString <|
+        succeed ()
+            |. chompIf (\c -> c == '#')
+            |. chompWhile Char.isHexDigit
+
+
+{-| Should parse :
+
+    rgb ( 124, 11, 48 )
+
+-}
+pColorFunc func =
+    succeed (\r g b -> func ++ "(" ++ String.fromInt r ++ "," ++ String.fromInt g ++ "," ++ String.fromInt b ++ ")")
+        |. symbol (func ++ "(")
+        |. spaces
+        |= int
+        |. spaces
+        |. symbol ","
+        |. spaces
+        |= int
+        |. spaces
+        |. symbol ","
+        |. spaces
+        |= int
+        |. spaces
+        |. symbol ")"
+
+
+pColorInst =
+    succeed Color
+        |. token "Color"
+        |. spaces
+        -- A color is either in hex notation (#DEADFE), function notation (rgb(r, g, b), hsl(h, s, l)) or a css color name
+        |= oneOf [ pColorHex, pColorFunc "rgb", pColorFunc "hsl", pIdentifier ]
+
+
 pInst : Parser Inst
 pInst =
-    oneOf [ pForward, pLeft, pRight, pRepeat, pCall ]
+    oneOf [ pForward, pLeft, pRight, pRepeat, pCall, pColorInst ]
 
 
 {-| Parser for a procedure, should be able to parse this :
@@ -103,11 +146,14 @@ pProgram =
         |= loop Dict.empty
             (\procs ->
                 oneOf
+                    -- Named procedure
                     [ succeed (\identifier proc -> P.Loop (Dict.insert identifier proc procs))
                         |= pIdentifier
                         |. spaces
                         |= pProc
                         |. spaces
+
+                    -- Main proc can be unnamed
                     , succeed (\proc -> P.Loop (Dict.insert "main" proc procs))
                         |= pProc
                     , succeed ()

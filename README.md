@@ -2,7 +2,7 @@
 
 ## Dev
 
-Il est recommandé d'utiliser elm-live :
+Il est recommandé d'utiliser [elm-live](https://www.elm-live.com/) :
 
 `$ elm-live src/Main.elm -o -d src -- --output src/index.js`
 
@@ -10,5 +10,4 @@ Il est recommandé d'utiliser elm-live :
 
 ## TODO
 
-- Changer de couleur (ajouter instruction Color)
 - Changer de taille de pinceau (ajouter instruction Width)
