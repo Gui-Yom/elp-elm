@@ -6106,6 +6106,144 @@ var $author$project$Program$pCall = A2(
 			$elm$parser$Parser$token('Call')),
 		$elm$parser$Parser$spaces),
 	$author$project$Program$pIdentifier);
+var $author$project$Program$Color = function (a) {
+	return {$: 'Color', a: a};
+};
+var $elm$parser$Parser$ExpectingSymbol = function (a) {
+	return {$: 'ExpectingSymbol', a: a};
+};
+var $elm$parser$Parser$Advanced$symbol = $elm$parser$Parser$Advanced$token;
+var $elm$parser$Parser$symbol = function (str) {
+	return $elm$parser$Parser$Advanced$symbol(
+		A2(
+			$elm$parser$Parser$Advanced$Token,
+			str,
+			$elm$parser$Parser$ExpectingSymbol(str)));
+};
+var $author$project$Program$pColorFunc = function (func) {
+	return A2(
+		$elm$parser$Parser$keeper,
+		A2(
+			$elm$parser$Parser$keeper,
+			A2(
+				$elm$parser$Parser$keeper,
+				A2(
+					$elm$parser$Parser$ignorer,
+					A2(
+						$elm$parser$Parser$ignorer,
+						$elm$parser$Parser$succeed(
+							F3(
+								function (r, g, b) {
+									return func + ('(' + ($elm$core$String$fromInt(r) + (',' + ($elm$core$String$fromInt(g) + (',' + ($elm$core$String$fromInt(b) + ')'))))));
+								})),
+						$elm$parser$Parser$symbol(func + '(')),
+					$elm$parser$Parser$spaces),
+				A2(
+					$elm$parser$Parser$ignorer,
+					A2(
+						$elm$parser$Parser$ignorer,
+						A2($elm$parser$Parser$ignorer, $elm$parser$Parser$int, $elm$parser$Parser$spaces),
+						$elm$parser$Parser$symbol(',')),
+					$elm$parser$Parser$spaces)),
+			A2(
+				$elm$parser$Parser$ignorer,
+				A2(
+					$elm$parser$Parser$ignorer,
+					A2($elm$parser$Parser$ignorer, $elm$parser$Parser$int, $elm$parser$Parser$spaces),
+					$elm$parser$Parser$symbol(',')),
+				$elm$parser$Parser$spaces)),
+		A2(
+			$elm$parser$Parser$ignorer,
+			A2($elm$parser$Parser$ignorer, $elm$parser$Parser$int, $elm$parser$Parser$spaces),
+			$elm$parser$Parser$symbol(')')));
+};
+var $elm$parser$Parser$UnexpectedChar = {$: 'UnexpectedChar'};
+var $elm$parser$Parser$Advanced$chompIf = F2(
+	function (isGood, expecting) {
+		return $elm$parser$Parser$Advanced$Parser(
+			function (s) {
+				var newOffset = A3($elm$parser$Parser$Advanced$isSubChar, isGood, s.offset, s.src);
+				return _Utils_eq(newOffset, -1) ? A2(
+					$elm$parser$Parser$Advanced$Bad,
+					false,
+					A2($elm$parser$Parser$Advanced$fromState, s, expecting)) : (_Utils_eq(newOffset, -2) ? A3(
+					$elm$parser$Parser$Advanced$Good,
+					true,
+					_Utils_Tuple0,
+					{col: 1, context: s.context, indent: s.indent, offset: s.offset + 1, row: s.row + 1, src: s.src}) : A3(
+					$elm$parser$Parser$Advanced$Good,
+					true,
+					_Utils_Tuple0,
+					{col: s.col + 1, context: s.context, indent: s.indent, offset: newOffset, row: s.row, src: s.src}));
+			});
+	});
+var $elm$parser$Parser$chompIf = function (isGood) {
+	return A2($elm$parser$Parser$Advanced$chompIf, isGood, $elm$parser$Parser$UnexpectedChar);
+};
+var $elm$parser$Parser$chompWhile = $elm$parser$Parser$Advanced$chompWhile;
+var $elm$parser$Parser$Advanced$mapChompedString = F2(
+	function (func, _v0) {
+		var parse = _v0.a;
+		return $elm$parser$Parser$Advanced$Parser(
+			function (s0) {
+				var _v1 = parse(s0);
+				if (_v1.$ === 'Bad') {
+					var p = _v1.a;
+					var x = _v1.b;
+					return A2($elm$parser$Parser$Advanced$Bad, p, x);
+				} else {
+					var p = _v1.a;
+					var a = _v1.b;
+					var s1 = _v1.c;
+					return A3(
+						$elm$parser$Parser$Advanced$Good,
+						p,
+						A2(
+							func,
+							A3($elm$core$String$slice, s0.offset, s1.offset, s0.src),
+							a),
+						s1);
+				}
+			});
+	});
+var $elm$parser$Parser$Advanced$getChompedString = function (parser) {
+	return A2($elm$parser$Parser$Advanced$mapChompedString, $elm$core$Basics$always, parser);
+};
+var $elm$parser$Parser$getChompedString = $elm$parser$Parser$Advanced$getChompedString;
+var $elm$core$Char$isHexDigit = function (_char) {
+	var code = $elm$core$Char$toCode(_char);
+	return ((48 <= code) && (code <= 57)) || (((65 <= code) && (code <= 70)) || ((97 <= code) && (code <= 102)));
+};
+var $author$project$Program$pColorHex = $elm$parser$Parser$getChompedString(
+	A2(
+		$elm$parser$Parser$ignorer,
+		A2(
+			$elm$parser$Parser$ignorer,
+			$elm$parser$Parser$succeed(_Utils_Tuple0),
+			$elm$parser$Parser$chompIf(
+				function (c) {
+					return _Utils_eq(
+						c,
+						_Utils_chr('#'));
+				})),
+		$elm$parser$Parser$chompWhile($elm$core$Char$isHexDigit)));
+var $author$project$Program$pColorInst = A2(
+	$elm$parser$Parser$keeper,
+	A2(
+		$elm$parser$Parser$ignorer,
+		A2(
+			$elm$parser$Parser$ignorer,
+			$elm$parser$Parser$succeed($author$project$Program$Color),
+			$elm$parser$Parser$token('Color')),
+		$elm$parser$Parser$spaces),
+	$elm$parser$Parser$oneOf(
+		_List_fromArray(
+			[
+				$author$project$Program$pColorHex,
+				$author$project$Program$pColorFunc('rgb'),
+				$author$project$Program$pColorFunc('hsl'),
+				$author$project$Program$pIdentifier
+			])));
 var $author$project$Program$Forward = function (a) {
 	return {$: 'Forward', a: a};
 };
@@ -6406,7 +6544,8 @@ function $author$project$Program$cyclic$pInst() {
 				$author$project$Program$pLeft,
 				$author$project$Program$pRight,
 				$author$project$Program$cyclic$pRepeat(),
-				$author$project$Program$pCall
+				$author$project$Program$pCall,
+				$author$project$Program$pColorInst
 			]));
 }
 function $author$project$Program$cyclic$pRepeat() {
@@ -6654,7 +6793,6 @@ var $elm$html$Html$Attributes$boolProperty = F2(
 			$elm$json$Json$Encode$bool(bool));
 	});
 var $elm$html$Html$Attributes$autofocus = $elm$html$Html$Attributes$boolProperty('autofocus');
-var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
@@ -6663,7 +6801,6 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 			$elm$json$Json$Encode$string(string));
 	});
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
-var $elm$html$Html$code = _VirtualDom_node('code');
 var $elm$html$Html$Attributes$cols = function (n) {
 	return A2(
 		_VirtualDom_attribute,
@@ -6671,8 +6808,6 @@ var $elm$html$Html$Attributes$cols = function (n) {
 		$elm$core$String$fromInt(n));
 };
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $elm$html$Html$h1 = _VirtualDom_node('h1');
-var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $elm$virtual_dom$VirtualDom$lazy = _VirtualDom_lazy;
 var $elm$html$Html$Lazy$lazy = $elm$virtual_dom$VirtualDom$lazy;
@@ -6713,9 +6848,7 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			$elm$html$Html$Events$alwaysStop,
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
-var $elm$html$Html$p = _VirtualDom_node('p');
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
-var $elm$html$Html$pre = _VirtualDom_node('pre');
 var $elm$html$Html$Attributes$rows = function (n) {
 	return A2(
 		_VirtualDom_attribute,
@@ -6723,8 +6856,6 @@ var $elm$html$Html$Attributes$rows = function (n) {
 		$elm$core$String$fromInt(n));
 };
 var $elm$html$Html$Attributes$spellcheck = $elm$html$Html$Attributes$boolProperty('spellcheck');
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$textarea = _VirtualDom_node('textarea');
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $elm$core$Basics$ge = _Utils_ge;
@@ -6780,7 +6911,7 @@ var $author$project$Canvas$drawProc = F3(
 											$elm$core$String$fromFloat(newCursor.x)),
 											$elm$svg$Svg$Attributes$y2(
 											$elm$core$String$fromFloat(newCursor.y)),
-											$elm$svg$Svg$Attributes$style('stroke:rgb(255,0,0);stroke-width:2')
+											$elm$svg$Svg$Attributes$style('stroke:' + (cursor.color + ';stroke-width:2'))
 										]),
 									_List_Nil)
 								]),
@@ -6838,7 +6969,7 @@ var $author$project$Canvas$drawProc = F3(
 							cursor = $temp$cursor;
 							continue drawProc;
 						}
-					default:
+					case 'Call':
 						var procName = inst.a;
 						var $temp$prog = prog,
 							$temp$proc = _Utils_ap(
@@ -6848,6 +6979,17 @@ var $author$project$Canvas$drawProc = F3(
 								A2($elm$core$Dict$get, procName, prog)),
 							subProc),
 							$temp$cursor = cursor;
+						prog = $temp$prog;
+						proc = $temp$proc;
+						cursor = $temp$cursor;
+						continue drawProc;
+					default:
+						var col = inst.a;
+						var $temp$prog = prog,
+							$temp$proc = subProc,
+							$temp$cursor = _Utils_update(
+							cursor,
+							{color: col});
 						prog = $temp$prog;
 						proc = $temp$proc;
 						cursor = $temp$cursor;
@@ -6881,13 +7023,15 @@ var $author$project$Canvas$view = function (mprog) {
 						$elm$core$Maybe$withDefault,
 						_List_Nil,
 						A2($elm$core$Dict$get, 'main', prog)),
-					{angle: 0, x: 250, y: 250});
+					{angle: 0, color: '#FF0000', x: 250, y: 250});
 			} else {
 				return _List_Nil;
 			}
 		}());
 };
 var $elm$html$Html$li = _VirtualDom_node('li');
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$core$Debug$toString = _Debug_toString;
 var $elm$html$Html$ul = _VirtualDom_node('ul');
 var $author$project$ErrorList$view = function (errors) {
@@ -6925,6 +7069,120 @@ var $author$project$ErrorList$view = function (errors) {
 			},
 			errors));
 };
+var $elm$html$Html$br = _VirtualDom_node('br');
+var $author$project$Manual$br = A2($elm$html$Html$br, _List_Nil, _List_Nil);
+var $elm$html$Html$code = _VirtualDom_node('code');
+var $elm$html$Html$pre = _VirtualDom_node('pre');
+var $author$project$Manual$code = function (text) {
+	return A2(
+		$elm$html$Html$pre,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$code,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('codeDisplay')
+					]),
+				text)
+			]));
+};
+var $elm$html$Html$details = _VirtualDom_node('details');
+var $elm$html$Html$h2 = _VirtualDom_node('h2');
+var $author$project$Manual$h2 = function (txt) {
+	return A2(
+		$elm$html$Html$h2,
+		_List_Nil,
+		_List_fromArray(
+			[
+				$elm$html$Html$text(txt)
+			]));
+};
+var $elm$html$Html$h3 = _VirtualDom_node('h3');
+var $author$project$Manual$h3 = function (txt) {
+	return A2(
+		$elm$html$Html$h3,
+		_List_Nil,
+		_List_fromArray(
+			[
+				$elm$html$Html$text(txt)
+			]));
+};
+var $elm$html$Html$p = _VirtualDom_node('p');
+var $elm$html$Html$summary = _VirtualDom_node('summary');
+var $author$project$Manual$view = A2(
+	$elm$html$Html$details,
+	_List_fromArray(
+		[
+			$elm$html$Html$Attributes$id('manual')
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$elm$html$Html$summary,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$text('Manuel')
+				])),
+			$author$project$Manual$h2('Programme'),
+			A2(
+			$elm$html$Html$p,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$text('instruction: Forward n | Left n | Right n | Repeat n proc | Call name | Color color'),
+					$author$project$Manual$br,
+					$elm$html$Html$text('proc: [instruction,...]'),
+					$author$project$Manual$br,
+					$elm$html$Html$text('procDef: name proc')
+				])),
+			$author$project$Manual$h3('Exemple'),
+			$author$project$Manual$code(
+			_List_fromArray(
+				[
+					$elm$html$Html$text('circle [Repeat 15 [Forward 10, Left 24]]'),
+					$author$project$Manual$br,
+					$elm$html$Html$text('[Call circle]')
+				])),
+			$author$project$Manual$h2('Instructions'),
+			$author$project$Manual$h3('Color <color>'),
+			A2(
+			$elm$html$Html$p,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$text('<color> est sous une des formes suivantes :'),
+					A2(
+					$elm$html$Html$ul,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text('Code couleur hexadécimal, ex. #24FEB3')
+								])),
+							A2(
+							$elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text('Fonctions couleur CSS, ex. rgb(45, 78, 255) or hsl(46, 89, 12)')
+								])),
+							A2(
+							$elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text('Nom de couleur CSS, ex. beige')
+								]))
+						]))
+				]))
+		]));
 var $author$project$ProgramList$MouseOut = {$: 'MouseOut'};
 var $author$project$ProgramList$ProcDefHover = function (a) {
 	return {$: 'ProcDefHover', a: a};
@@ -7174,67 +7432,7 @@ var $author$project$Main$view = function (model) {
 								}
 							}(),
 							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$p,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$id('manual')
-										]),
-									_List_fromArray(
-										[
-											A2(
-											$elm$html$Html$h1,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$elm$html$Html$text('Manuel')
-												])),
-											A2(
-											$elm$html$Html$h2,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$elm$html$Html$text('Programme')
-												])),
-											A2(
-											$elm$html$Html$p,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$elm$html$Html$text('instruction: Forward n | Left n | Right n | Repeat n proc | Call name'),
-													A2($elm$html$Html$br, _List_Nil, _List_Nil),
-													$elm$html$Html$text('proc: [instruction,...]'),
-													A2($elm$html$Html$br, _List_Nil, _List_Nil),
-													$elm$html$Html$text('procDef: name proc')
-												])),
-											A2(
-											$elm$html$Html$h2,
-											_List_Nil,
-											_List_fromArray(
-												[
-													$elm$html$Html$text('Exemple')
-												])),
-											A2(
-											$elm$html$Html$pre,
-											_List_Nil,
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$code,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('codeDisplay')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text('circle [Repeat 15 [Forward 10, Left 24]]'),
-															A2($elm$html$Html$br, _List_Nil, _List_Nil),
-															$elm$html$Html$text('[Call circle]')
-														]))
-												]))
-										]))
-								]))))),
+								[$author$project$Manual$view]))))),
 				A2(
 				$elm$html$Html$div,
 				_List_fromArray(

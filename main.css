@@ -3,6 +3,7 @@
     justify-content: space-around;
     height: 600px;
     align-content: stretch;
+    font-family: sans-serif;
 }
 
 .column {
@@ -10,17 +11,23 @@
     padding: 20px;
 }
 
+/* Code editor */
+
 #codeEditor {
     font-family: "Cascadia Mono", Menlo, "Ubuntu Mono", monospace;
     font-size: small;
     resize: vertical;
 }
 
+/* Canvas */
+
 #canvas {
     border: thin solid fuchsia;
     border-radius: 5px;
     background-color: #111111;
 }
+
+/* Error list */
 
 #errorList {
     border: thin dashed red;
@@ -37,6 +44,8 @@
     margin-left: -20px;
     margin-right: 10px;
 }
+
+/* Program list */
 
 #programList {
     border: thin dashed green;
@@ -75,7 +84,29 @@
     background-color: aqua;
 }
 
+/* Manual */
+
 .codeDisplay {
     font-family: "Cascadia Mono", Menlo, "Ubuntu Mono", monospace;
     font-size: small;
+}
+
+#manual {
+    border: 1px solid #bbb;
+    /*border-radius: 5px;*/
+    padding: 0.5rem;
+    /*margin: 0.5rem;*/
+    /*max-width: 50%;*/
+    /*min-width: 300px;*/
+}
+
+#manual summary {
+    cursor: pointer;
+    font-weight: bold;
+    list-style: none;
+    padding: 0.25rem;
+}
+
+#manual[open] summary {
+    border-bottom: 1px solid #bbb;
 }
