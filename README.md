@@ -21,9 +21,13 @@ Les différents composants de l'interface sont synchronisés. Ils se mettent à 
 programme. Cependant, il est important de noter qu'il existe des "points de sauvegarde". Le panel sur la droite et le
 détail du programme afficheront toujours la dernière version fonctionnelle du programme.
 
+Il est aussi important de noter que les instructions modifiant le curseur comme Color ou Width ont pour champ d'effet le
+reste du programme. Il aurait été intéressant d'avoir un concept de stack frame, une couleur définie dans une procédure
+ne déborde pas dans la procédure parente.
+
 ## Code
 
-Le code est séparé en fichiers contenant chacun un composant de l'interface.
+Le code est séparé en fichiers contenants chacun un composant de l'interface.
 
 - `Canvas.elm`: Zone de dessin svg (panel à droite)
 - `ErrorList.elm`: Espace décrivant les erreurs dans le programme
@@ -34,7 +38,3 @@ Le programme est sauvegardé dans le stockage local du navigateur et persiste en
 
 - `LocalStorage.elm`: Bindings vers l'API LocalStorage du navigateur
 - `Program.elm`: Parser et checker du programme
-
-## TODO
-
-- Changer de taille de pinceau (ajouter instruction Width)
