@@ -18,7 +18,7 @@ jobs:
           elm-version: 0.19.1
 
       - name: Build
-        run: elm make src/Main.elm --output src/index.js
+        run: elm make src/Main.elm --output src/main.js
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3

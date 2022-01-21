@@ -1,4 +1,4 @@
-module Canvas exposing (..)
+module Canvas exposing (view)
 
 import Dict
 import Html exposing (Html)
@@ -15,6 +15,8 @@ type alias Cursor =
     { x : Float, y : Float, angle : Float, color : String }
 
 
+{-| Correct angle in case it overflows
+-}
 correctAngle : Float -> Float
 correctAngle angle =
     if angle >= 360 then
@@ -27,6 +29,8 @@ correctAngle angle =
         angle
 
 
+{-| Execute program instructions recursively
+-}
 drawProc : Program -> Proc -> Cursor -> List (Svg msg)
 drawProc prog proc cursor =
     case proc of

@@ -15,6 +15,7 @@ type Inst
     | Repeat Int Proc
       -- Call a procedure by its name
     | Call String
+      -- Change cursor color
     | Color String
 
 

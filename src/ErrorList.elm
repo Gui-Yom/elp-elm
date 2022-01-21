@@ -5,6 +5,8 @@ import Html.Attributes exposing (id)
 import Program exposing (ProgramError(..))
 
 
+{-| Display program errors that prevent it from running
+-}
 view : List ProgramError -> Html msg
 view errors =
     ul [ id "errorList" ]
