@@ -12,7 +12,7 @@ import Svg.Attributes exposing (height, id, style, viewBox, width, x1, x2, y1, y
 
 
 type alias Cursor =
-    { x : Float, y : Float, angle : Float, color : String }
+    { x : Float, y : Float, angle : Float, color : String, width : Float }
 
 
 {-| Correct angle in case it overflows
@@ -52,7 +52,7 @@ drawProc prog proc cursor =
                         , y1 (String.fromFloat cursor.y)
                         , x2 (String.fromFloat newCursor.x)
                         , y2 (String.fromFloat newCursor.y)
-                        , style ("stroke:" ++ cursor.color ++ ";stroke-width:2")
+                        , style ("stroke:" ++ cursor.color ++ ";stroke-width:" ++ String.fromFloat cursor.width)
                         ]
                         []
                     ]
@@ -77,6 +77,9 @@ drawProc prog proc cursor =
                 Color col ->
                     drawProc prog subProc { cursor | color = col }
 
+                Width width ->
+                    drawProc prog subProc { cursor | width = width }
+
 
 view : Maybe Program -> Html msg
 view mprog =
@@ -84,7 +87,7 @@ view mprog =
         [ id "canvas", width "500", height "500", viewBox "0 0 500 500" ]
         (case mprog of
             Just prog ->
-                drawProc prog (Maybe.withDefault [] (Dict.get "main" prog)) { x = 250, y = 250, angle = 0, color = "#FF0000" }
+                drawProc prog (Maybe.withDefault [] (Dict.get "main" prog)) { x = 250, y = 250, angle = 0, color = "#FF0000", width = 2 }
 
             Nothing ->
                 []

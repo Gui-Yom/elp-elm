@@ -1,7 +1,7 @@
 module Program exposing (Inst(..), Proc, Program, ProgramError(..), parseProgram)
 
 import Dict exposing (Dict)
-import Parser as P exposing ((|.), (|=), DeadEnd, Parser, Step, Trailing(..), chompIf, chompWhile, float, getChompedString, int, lazy, loop, map, oneOf, sequence, spaces, succeed, symbol, token, variable)
+import Parser as P exposing ((|.), (|=), DeadEnd, Parser, Step, Trailing(..), chompIf, chompWhile, float, getChompedString, int, keyword, lazy, loop, map, oneOf, sequence, spaces, succeed, symbol, variable)
 import Set
 
 
@@ -15,8 +15,10 @@ type Inst
     | Repeat Int Proc
       -- Call a procedure by its name
     | Call String
-      -- Change cursor color
+      -- Change stroke color
     | Color String
+      -- Change stroke width
+    | Width Float
 
 
 {-| Procedure aka list of instructions
@@ -33,28 +35,28 @@ type alias Program =
 
 pForward =
     succeed Forward
-        |. token "Forward"
+        |. keyword "Forward"
         |. spaces
         |= float
 
 
 pLeft =
     succeed Left
-        |. token "Left"
+        |. keyword "Left"
         |. spaces
         |= float
 
 
 pRight =
     succeed Right
-        |. token "Right"
+        |. keyword "Right"
         |. spaces
         |= float
 
 
 pRepeat =
     succeed Repeat
-        |. token "Repeat"
+        |. keyword "Repeat"
         |. spaces
         |= int
         |. spaces
@@ -71,7 +73,7 @@ pIdentifier =
 
 pCall =
     succeed Call
-        |. token "Call"
+        |. keyword "Call"
         |. spaces
         |= pIdentifier
 
@@ -112,15 +114,22 @@ pColorFunc func =
 
 pColorInst =
     succeed Color
-        |. token "Color"
+        |. keyword "Color"
         |. spaces
         -- A color is either in hex notation (#DEADFE), function notation (rgb(r, g, b), hsl(h, s, l)) or a css color name
         |= oneOf [ pColorHex, pColorFunc "rgb", pColorFunc "hsl", pIdentifier ]
 
 
+pWidth =
+    succeed Width
+        |. keyword "Width"
+        |. spaces
+        |= float
+
+
 pInst : Parser Inst
 pInst =
-    oneOf [ pForward, pLeft, pRight, pRepeat, pCall, pColorInst ]
+    oneOf [ pForward, pLeft, pRight, pRepeat, pCall, pColorInst, pWidth ]
 
 
 {-| Parser for a procedure, should be able to parse this :

@@ -29,7 +29,7 @@ view =
         [ summary [] [ text "Manuel" ]
         , h2 "Programme"
         , p []
-            [ text "instruction: Forward n | Left n | Right n | Repeat n proc | Call name | Color color"
+            [ text "instruction: Forward float | Left float | Right float | Repeat int proc | Call name | Color color | Width float"
             , br
             , text "proc: [instruction,...]"
             , br
