@@ -1,22 +1,22 @@
 #root {
     display: flex;
     justify-content: space-around;
-    height: 600px;
     align-content: stretch;
     font-family: sans-serif;
+    font-size: medium;
 }
 
 .column {
-    flex: 0 0 40%;
-    padding: 20px;
+    flex: 0 0 45%;
+    padding: 2%;
 }
 
 /* Code editor */
 
 #codeEditor {
     font-family: "Cascadia Mono", Menlo, "Ubuntu Mono", monospace;
-    font-size: small;
-    resize: vertical;
+    border: thin solid #bbb;
+    padding: 0.5rem;
 }
 
 /* Canvas */
@@ -24,7 +24,9 @@
 #canvas {
     border: thin solid fuchsia;
     border-radius: 5px;
-    background-color: #111111;
+    background-color: #141414;
+    width: 600px;
+    height: 600px;
 }
 
 /* Error list */
@@ -52,7 +54,6 @@
     padding-top: 10px;
     padding-bottom: 10px;
     font-family: "Cascadia Mono", Menlo, "Ubuntu Mono", monospace;
-    font-size: small;
 }
 
 #programList ul {
@@ -92,12 +93,8 @@
 }
 
 #manual {
-    border: 1px solid #bbb;
-    /*border-radius: 5px;*/
+    border: thin solid #bbb;
     padding: 0.5rem;
-    /*margin: 0.5rem;*/
-    /*max-width: 50%;*/
-    /*min-width: 300px;*/
 }
 
 #manual summary {
@@ -108,5 +105,5 @@
 }
 
 #manual[open] summary {
-    border-bottom: 1px solid #bbb;
+    border-bottom: thin solid #bbb;
 }

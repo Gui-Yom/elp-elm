@@ -84,10 +84,10 @@ drawProc prog proc cursor =
 view : Maybe Program -> Html msg
 view mprog =
     svg
-        [ id "canvas", width "500", height "500", viewBox "0 0 500 500" ]
+        [ id "canvas" ]
         (case mprog of
             Just prog ->
-                drawProc prog (Maybe.withDefault [] (Dict.get "main" prog)) { x = 250, y = 250, angle = 0, color = "#FF0000", width = 2 }
+                drawProc prog (Maybe.withDefault [] (Dict.get "main" prog)) { x = 300, y = 300, angle = 0, color = "#FF0000", width = 2 }
 
             Nothing ->
                 []

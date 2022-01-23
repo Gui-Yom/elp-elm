@@ -2,6 +2,8 @@
 
 ## Dev
 
+`git clone https://github.com/Gui-Yom/elp-elm`
+
 Il est recommandé d'utiliser [elm-live](https://www.elm-live.com/) :
 
 `elm-live src/Main.elm -o -d src -- --output src/index.js`
