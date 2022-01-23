@@ -7058,20 +7058,14 @@ var $author$project$Canvas$drawProc = F3(
 			}
 		}
 	});
-var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
 var $elm$svg$Svg$Attributes$id = _VirtualDom_attribute('id');
 var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
-var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
-var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
 var $author$project$Canvas$view = function (mprog) {
 	return A2(
 		$elm$svg$Svg$svg,
 		_List_fromArray(
 			[
-				$elm$svg$Svg$Attributes$id('canvas'),
-				$elm$svg$Svg$Attributes$width('500'),
-				$elm$svg$Svg$Attributes$height('500'),
-				$elm$svg$Svg$Attributes$viewBox('0 0 500 500')
+				$elm$svg$Svg$Attributes$id('canvas')
 			]),
 		function () {
 			if (mprog.$ === 'Just') {
@@ -7083,7 +7077,7 @@ var $author$project$Canvas$view = function (mprog) {
 						$elm$core$Maybe$withDefault,
 						_List_Nil,
 						A2($elm$core$Dict$get, 'main', prog)),
-					{angle: 0, color: '#FF0000', width: 2, x: 250, y: 250});
+					{angle: 0, color: '#FF0000', width: 2, x: 300, y: 300});
 			} else {
 				return _List_Nil;
 			}
@@ -7095,7 +7089,7 @@ var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$core$Debug$toString = _Debug_toString;
 var $elm$html$Html$ul = _VirtualDom_node('ul');
 var $author$project$ErrorList$view = function (errors) {
-	return A2(
+	return $elm$core$List$isEmpty(errors) ? A2($elm$html$Html$div, _List_Nil, _List_Nil) : A2(
 		$elm$html$Html$ul,
 		_List_fromArray(
 			[
@@ -7384,56 +7378,61 @@ var $author$project$ProgramList$showProc = F2(
 				proc));
 	});
 var $author$project$ProgramList$view = F2(
-	function (model, prog) {
-		return A2(
-			$elm$html$Html$ul,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$id('programList')
-				]),
-			A2(
-				$elm$core$List$map,
-				function (tuple) {
-					var _v0 = tuple;
-					var name = _v0.a;
-					var proc = _v0.b;
-					return A2(
-						$elm$html$Html$li,
-						_List_Nil,
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$span,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$classList(
-										_List_fromArray(
-											[
-												_Utils_Tuple2('procDef', true),
-												_Utils_Tuple2(
-												'procHover',
-												A2(
-													$elm$core$Maybe$withDefault,
-													false,
+	function (model, mprog) {
+		if (mprog.$ === 'Just') {
+			var prog = mprog.a;
+			return A2(
+				$elm$html$Html$ul,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$id('programList')
+					]),
+				A2(
+					$elm$core$List$map,
+					function (tuple) {
+						var _v1 = tuple;
+						var name = _v1.a;
+						var proc = _v1.b;
+						return A2(
+							$elm$html$Html$li,
+							_List_Nil,
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$span,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$classList(
+											_List_fromArray(
+												[
+													_Utils_Tuple2('procDef', true),
+													_Utils_Tuple2(
+													'procHover',
 													A2(
-														$elm$core$Maybe$map,
-														function (def) {
-															return _Utils_eq(def, name);
-														},
-														model.procRefHovered)))
-											])),
-										$elm$html$Html$Events$onMouseOver(
-										$author$project$ProgramList$ProcDefHover(name)),
-										$elm$html$Html$Events$onMouseOut($author$project$ProgramList$MouseOut)
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text(name)
-									])),
-								A2($author$project$ProgramList$showProc, model, proc)
-							]));
-				},
-				$elm$core$Dict$toList(prog)));
+														$elm$core$Maybe$withDefault,
+														false,
+														A2(
+															$elm$core$Maybe$map,
+															function (def) {
+																return _Utils_eq(def, name);
+															},
+															model.procRefHovered)))
+												])),
+											$elm$html$Html$Events$onMouseOver(
+											$author$project$ProgramList$ProcDefHover(name)),
+											$elm$html$Html$Events$onMouseOut($author$project$ProgramList$MouseOut)
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(name)
+										])),
+									A2($author$project$ProgramList$showProc, model, proc)
+								]));
+					},
+					$elm$core$Dict$toList(prog)));
+		} else {
+			return A2($elm$html$Html$div, _List_Nil, _List_Nil);
+		}
 	});
 var $author$project$Main$view = function (model) {
 	return A2(
@@ -7450,49 +7449,31 @@ var $author$project$Main$view = function (model) {
 					[
 						$elm$html$Html$Attributes$class('column')
 					]),
-				_Utils_ap(
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$textarea,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$id('codeEditor'),
-									$elm$html$Html$Attributes$placeholder('Program text'),
-									$elm$html$Html$Attributes$value(model.progText),
-									$elm$html$Html$Events$onInput($author$project$Main$ProgramTextUpdated),
-									$elm$html$Html$Attributes$autofocus(true),
-									$elm$html$Html$Attributes$cols(80),
-									$elm$html$Html$Attributes$rows(10),
-									$elm$html$Html$Attributes$spellcheck(false)
-								]),
-							_List_Nil)
-						]),
-					_Utils_ap(
-						$elm$core$List$isEmpty(model.errors) ? _List_Nil : _List_fromArray(
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$textarea,
+						_List_fromArray(
 							[
-								$author$project$ErrorList$view(model.errors)
+								$elm$html$Html$Attributes$id('codeEditor'),
+								$elm$html$Html$Attributes$placeholder('Program text'),
+								$elm$html$Html$Attributes$value(model.progText),
+								$elm$html$Html$Events$onInput($author$project$Main$ProgramTextUpdated),
+								$elm$html$Html$Attributes$autofocus(true),
+								$elm$html$Html$Attributes$cols(80),
+								$elm$html$Html$Attributes$rows(10),
+								$elm$html$Html$Attributes$spellcheck(false)
 							]),
-						_Utils_ap(
-							function () {
-								var _v0 = model.current;
-								if (_v0.$ === 'Just') {
-									var prog = _v0.a;
-									return _List_fromArray(
-										[
-											A2(
-											$elm$html$Html$map,
-											function (plmsg) {
-												return $author$project$Main$ProgramListMsg(plmsg);
-											},
-											A3($elm$html$Html$Lazy$lazy2, $author$project$ProgramList$view, model.plModel, prog))
-										]);
-								} else {
-									return _List_Nil;
-								}
-							}(),
-							_List_fromArray(
-								[$author$project$Manual$view]))))),
+						_List_Nil),
+						$author$project$ErrorList$view(model.errors),
+						A2(
+						$elm$html$Html$map,
+						function (plmsg) {
+							return $author$project$Main$ProgramListMsg(plmsg);
+						},
+						A3($elm$html$Html$Lazy$lazy2, $author$project$ProgramList$view, model.plModel, model.current)),
+						$author$project$Manual$view
+					])),
 				A2(
 				$elm$html$Html$div,
 				_List_fromArray(
