@@ -32,9 +32,16 @@ Le code est séparé en fichiers contenants chacun un composant de l'interface.
 - `Canvas.elm`: Zone de dessin svg (panel à droite)
 - `ErrorList.elm`: Espace décrivant les erreurs dans le programme
 - `ProgramList.elm`: Espace détaillant le programme en cours
+- `Manual.elm`: Zone d'aide
 - `Main.elm`: Page liant tous les composants
 
 Le programme est sauvegardé dans le stockage local du navigateur et persiste en les sessions.
 
 - `LocalStorage.elm`: Bindings vers l'API LocalStorage du navigateur
 - `Program.elm`: Parser et checker du programme
+
+## TODO
+
+- Procedure stack frame
+- Procedure arguments
+- Complete loop detection (establish a call graph)

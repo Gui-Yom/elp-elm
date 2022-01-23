@@ -1,7 +1,7 @@
 module ProgramList exposing (Model, Msg, init, update, view)
 
 import Dict
-import Html exposing (Html, li, span, text, ul)
+import Html exposing (Html, div, li, span, text, ul)
 import Html.Attributes exposing (class, classList, id)
 import Html.Events exposing (onMouseOut, onMouseOver)
 import Program exposing (Inst(..), Proc, Program)
@@ -81,29 +81,34 @@ showProc model proc =
         )
 
 
-view : Model -> Program -> Html Msg
-view model prog =
-    ul [ id "programList" ]
-        (List.map
-            (\tuple ->
-                let
-                    ( name, proc ) =
-                        tuple
-                in
-                li []
-                    [ span
-                        [ classList
-                            [ ( "procDef", True )
-                            , ( "procHover", Maybe.withDefault False (Maybe.map (\def -> def == name) model.procRefHovered) )
-                            ]
+view : Model -> Maybe Program -> Html Msg
+view model mprog =
+    case mprog of
+        Just prog ->
+            ul [ id "programList" ]
+                (List.map
+                    (\tuple ->
+                        let
+                            ( name, proc ) =
+                                tuple
+                        in
+                        li []
+                            [ span
+                                [ classList
+                                    [ ( "procDef", True )
+                                    , ( "procHover", Maybe.withDefault False (Maybe.map (\def -> def == name) model.procRefHovered) )
+                                    ]
 
-                        -- Events
-                        , onMouseOver (ProcDefHover name)
-                        , onMouseOut MouseOut
-                        ]
-                        [ text name ]
-                    , showProc model proc
-                    ]
-            )
-            (Dict.toList prog)
-        )
+                                -- Events
+                                , onMouseOver (ProcDefHover name)
+                                , onMouseOut MouseOut
+                                ]
+                                [ text name ]
+                            , showProc model proc
+                            ]
+                    )
+                    (Dict.toList prog)
+                )
+
+        Nothing ->
+            div [] []

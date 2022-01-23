@@ -29,6 +29,8 @@ type alias Model =
     { progText : String, valid : Maybe Program, current : Maybe Program, errors : List ProgramError, plModel : ProgramList.Model }
 
 
+{-| Initialize app with the program saved in local storage
+-}
 init : Maybe String -> ( Model, Cmd Msg )
 init flags =
     update (ProgramTextUpdated (Maybe.withDefault "" flags))
@@ -89,7 +91,7 @@ view : Model -> Html Msg
 view model =
     div [ id "root" ]
         [ div [ class "column" ]
-            ([ textarea
+            [ textarea
                 [ id "codeEditor"
                 , placeholder "Program text"
                 , value model.progText
@@ -100,23 +102,11 @@ view model =
                 , spellcheck False
                 ]
                 []
-             ]
-                ++ (if List.isEmpty model.errors then
-                        []
+            , ErrorList.view model.errors
+            , Html.map (\plmsg -> ProgramListMsg plmsg) (lazy2 ProgramList.view model.plModel model.current)
+            , Manual.view
+            ]
 
-                    else
-                        [ ErrorList.view model.errors ]
-                   )
-                ++ (case model.current of
-                        Just prog ->
-                            [ Html.map (\plmsg -> ProgramListMsg plmsg) (lazy2 ProgramList.view model.plModel prog) ]
-
-                        Nothing ->
-                            []
-                   )
-                ++ [ Manual.view ]
-            )
-
-        -- TODO(guillaume) il faut trouver un moyen d'indiquer quand les composants ne sont plus à jour
+        -- TODO(guillaume) il faut indiquer quand les composants ne sont plus à jour
         , div [ class "column" ] [ lazy Canvas.view model.valid ]
         ]

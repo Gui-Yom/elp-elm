@@ -1,6 +1,6 @@
 module ErrorList exposing (view)
 
-import Html exposing (Html, li, text, ul)
+import Html exposing (Html, div, li, text, ul)
 import Html.Attributes exposing (id)
 import Program exposing (ProgramError(..))
 
@@ -9,25 +9,29 @@ import Program exposing (ProgramError(..))
 -}
 view : List ProgramError -> Html msg
 view errors =
-    ul [ id "errorList" ]
-        (List.map
-            (\e ->
-                li []
-                    [ text
-                        (case e of
-                            SyntaxError d ->
-                                "Syntax error : " ++ Debug.toString d.problem ++ " at (" ++ String.fromInt d.row ++ ", " ++ String.fromInt d.col ++ ")"
+    if List.isEmpty errors then
+        div [] []
 
-                            UnknownProc proc ->
-                                "Unknown procedure name : " ++ proc
+    else
+        ul [ id "errorList" ]
+            (List.map
+                (\e ->
+                    li []
+                        [ text
+                            (case e of
+                                SyntaxError d ->
+                                    "Syntax error : " ++ Debug.toString d.problem ++ " at (" ++ String.fromInt d.row ++ ", " ++ String.fromInt d.col ++ ")"
 
-                            Loop proc ->
-                                "Infinite loop in procedure : " ++ proc
+                                UnknownProc proc ->
+                                    "Unknown procedure name : " ++ proc
 
-                            NoMain ->
-                                "No main procedure"
-                        )
-                    ]
+                                Loop proc ->
+                                    "Infinite loop in procedure : " ++ proc
+
+                                NoMain ->
+                                    "No main procedure"
+                            )
+                        ]
+                )
+                errors
             )
-            errors
-        )
