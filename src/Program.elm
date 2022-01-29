@@ -230,6 +230,7 @@ traverseCallGraph graph visited next =
 
 {-| Driver function for traverseCallGraph
 -}
+checkCallGraph : Program -> List ProgramError
 checkCallGraph prog =
     traverseCallGraph (callGraph prog) Set.empty "main"
 

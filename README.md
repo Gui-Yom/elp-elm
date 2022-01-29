@@ -42,7 +42,16 @@ Le programme est sauvegardé dans le stockage local du navigateur et persiste en
 - `LocalStorage.elm`: Bindings vers l'API LocalStorage du navigateur
 - `Program.elm`: Parser et checker du programme
 
+## Fonctionnalités du langage
+
+- Instructions de base : Forward, Left, Right, Repeat
+- Paramètres de pinceau : Color, Width
+- Définition de procédures : Call
+- Détection d'erreurs de syntaxe
+- Détection de boucles infinies lors des appels
+- Détection des appels invalides
+- Stack pour les paramètres Color et Width (la modification dans une procédure n'affecte pas la procédure qui l'appelle)
+
 ## TODO
 
-- Procedure stack frame
 - Procedure arguments
