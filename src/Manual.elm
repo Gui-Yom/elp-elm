@@ -28,15 +28,13 @@ view =
     details [ id "manual" ]
         [ summary [] [ text "Manuel" ]
         , h2 "Programme"
-        , p []
+        , code
             [ text "instruction: Forward float | Left float | Right float | Repeat int proc | Call name | Color color | Width float"
             , br
             , text "proc: [instruction,...]"
             , br
             , text "procDef: name proc"
             ]
-        , h3 "Exemple"
-        , code [ text "circle [Repeat 15 [Forward 10, Left 24]]", br, text "[Call circle]" ]
         , h2 "Instructions"
         , h3 "Color <color>"
         , p []
@@ -46,5 +44,13 @@ view =
                 , li [] [ text "Fonctions couleur CSS, ex. rgb(45, 78, 255) or hsl(46, 89, 12)" ]
                 , li [] [ text "Nom de couleur CSS, ex. beige" ]
                 ]
+            ]
+        , h2 "Exemples"
+        , code
+            [ text "arc90 [Repeat 5 [Right 9, Forward 10], Color yellow, Repeat 5 [Right 9, Forward 10]]"
+            , br
+            , text "circle [Color red, Repeat 4 [Call arc90]]"
+            , br
+            , text "[Color blue, Width 2, Repeat 6 [Call circle, Forward 40, Left 60]]"
             ]
         ]

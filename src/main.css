@@ -1,9 +1,17 @@
+body {
+    --main-bg-color: #131516;
+    --main-fg-color: #e8e6e3;
+    --main-border-color: #404040;
+    background-color: var(--main-bg-color);
+    font-family: sans-serif;
+    font-size: medium;
+    color: var(--main-fg-color);
+}
+
 #root {
     display: flex;
     justify-content: space-around;
     align-content: stretch;
-    font-family: sans-serif;
-    font-size: medium;
 }
 
 .column {
@@ -15,24 +23,27 @@
 
 #codeEditor {
     font-family: "Cascadia Mono", Menlo, "Ubuntu Mono", monospace;
-    border: thin solid #bbb;
+    border: thin solid var(--main-border-color);
     padding: 0.5rem;
+    background-color: var(--main-bg-color);
+    color: var(--main-fg-color);
 }
 
 /* Canvas */
 
 #canvas {
-    border: thin solid fuchsia;
+    border: thin solid var(--main-border-color);
     border-radius: 5px;
-    background-color: #141414;
+    background-color: var(--main-bg-color);
     width: 600px;
     height: 600px;
+    box-shadow: 5px 5px 5px black;
 }
 
 /* Error list */
 
 #errorList {
-    border: thin dashed red;
+    border: thin dashed #D00000;
 }
 
 #errorList li {
@@ -50,7 +61,7 @@
 /* Program list */
 
 #programList {
-    border: thin dashed green;
+    border: thin dashed #00D000;
     padding-top: 10px;
     padding-bottom: 10px;
     font-family: "Cascadia Mono", Menlo, "Ubuntu Mono", monospace;
@@ -58,7 +69,7 @@
 
 #programList ul {
     padding-left: 20px;
-    border-left: medium solid grey;
+    border-left: thin solid var(--main-border-color);
 }
 
 .procList li {
@@ -93,7 +104,7 @@
 }
 
 #manual {
-    border: thin solid #bbb;
+    border: thin solid var(--main-border-color);
     padding: 0.5rem;
 }
 
@@ -105,5 +116,5 @@
 }
 
 #manual[open] summary {
-    border-bottom: thin solid #bbb;
+    border-bottom: thin solid var(--main-border-color);
 }
