@@ -3,6 +3,7 @@ module ErrorList exposing (view)
 import Html exposing (Html, div, li, text, ul)
 import Html.Attributes exposing (id)
 import Program exposing (ProgramError(..))
+import Set
 
 
 {-| Display program errors that prevent it from running
@@ -22,11 +23,11 @@ view errors =
                                 SyntaxError d ->
                                     "Syntax error : " ++ Debug.toString d.problem ++ " at (" ++ String.fromInt d.row ++ ", " ++ String.fromInt d.col ++ ")"
 
-                                UnknownProc proc ->
-                                    "Unknown procedure name : " ++ proc
+                                UndefinedProc proc ->
+                                    "Undefined procedure : " ++ proc
 
-                                Loop proc ->
-                                    "Infinite loop in procedure : " ++ proc
+                                Loop cycle ->
+                                    "Infinite loop : " ++ Debug.toString (Set.toList cycle)
 
                                 NoMain ->
                                     "No main procedure"

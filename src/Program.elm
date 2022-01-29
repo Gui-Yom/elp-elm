@@ -2,7 +2,7 @@ module Program exposing (Inst(..), Proc, Program, ProgramError(..), parseProgram
 
 import Dict exposing (Dict)
 import Parser as P exposing ((|.), (|=), DeadEnd, Parser, Step, Trailing(..), chompIf, chompWhile, float, getChompedString, int, keyword, lazy, loop, map, oneOf, sequence, spaces, succeed, symbol, variable)
-import Set
+import Set exposing (Set)
 
 
 {-| Instructions
@@ -177,10 +177,61 @@ pProgram =
 
 
 type ProgramError
-    = SyntaxError DeadEnd
-    | UnknownProc String
-    | Loop String
-    | NoMain
+    = SyntaxError DeadEnd -- Parse error
+    | UndefinedProc String -- Call to undefined procedure
+    | Loop (Set String) -- Call graph loop
+    | NoMain -- No main procedure defined
+
+
+{-| Create a list of the calls made from this procedure
+-}
+callGraphProc proc =
+    List.foldl
+        (\inst acc ->
+            case inst of
+                Call callee ->
+                    acc ++ [ callee ]
+
+                Repeat n subProc ->
+                    acc ++ callGraphProc subProc
+
+                _ ->
+                    acc
+        )
+        []
+        proc
+
+
+{-| Create a call graph of a program as a dict
+-}
+callGraph prog =
+    Dict.map (\k v -> callGraphProc v) prog
+
+
+{-| Traverse the call graph searching for loops and invalid calls
+-}
+traverseCallGraph : Dict String (List String) -> Set String -> String -> List ProgramError
+traverseCallGraph graph visited next =
+    if Set.member next visited then
+        [ Loop visited ]
+
+    else
+        let
+            children =
+                Dict.get next graph
+        in
+        case children of
+            Just nexts ->
+                List.concatMap (\n -> traverseCallGraph graph (Set.insert next visited) n) nexts
+
+            Nothing ->
+                [ UndefinedProc next ]
+
+
+{-| Driver function for traverseCallGraph
+-}
+checkCallGraph prog =
+    traverseCallGraph (callGraph prog) Set.empty "main"
 
 
 {-| Check the program for errors other than syntax errors
@@ -188,44 +239,15 @@ type ProgramError
 checkProgram : Program -> List ProgramError
 checkProgram prog =
     -- Check for main procedure existence
-    (if Dict.member "main" prog then
-        []
+    if Dict.member "main" prog then
+        checkCallGraph prog
 
-     else
+    else
         [ NoMain ]
-    )
-        -- Check for errors with instructions
-        ++ Dict.foldl
-            (\name proc errors ->
-                errors
-                    ++ List.foldl
-                        (\inst procErrors ->
-                            procErrors
-                                ++ (case inst of
-                                        Call callee ->
-                                            -- Check the call refer to an existing procedure
-                                            if Dict.member callee prog then
-                                                -- Check for a simple loop
-                                                if callee == name then
-                                                    [ Loop callee ]
-
-                                                else
-                                                    []
-
-                                            else
-                                                [ UnknownProc callee ]
-
-                                        _ ->
-                                            []
-                                   )
-                        )
-                        []
-                        proc
-            )
-            []
-            prog
 
 
+{-| Parse a program from input and check for errors
+-}
 parseProgram : String -> ( Maybe Program, List ProgramError )
 parseProgram text =
     case P.run pProgram text of

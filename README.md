@@ -46,4 +46,3 @@ Le programme est sauvegardé dans le stockage local du navigateur et persiste en
 
 - Procedure stack frame
 - Procedure arguments
-- Complete loop detection (establish a call graph)
