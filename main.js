@@ -7287,7 +7287,7 @@ var $author$project$Manual$view = A2(
 				[
 					$elm$html$Html$text('Manuel')
 				])),
-			$author$project$Manual$h2('Programme'),
+			$author$project$Manual$h2('Structure de programme'),
 			$author$project$Manual$code(
 			_List_fromArray(
 				[
@@ -7296,6 +7296,22 @@ var $author$project$Manual$view = A2(
 					$elm$html$Html$text('proc: [instruction,...]'),
 					$author$project$Manual$br,
 					$elm$html$Html$text('procDef: name proc')
+				])),
+			$author$project$Manual$h2('Scopes'),
+			A2(
+			$elm$html$Html$p,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$text('L\'utilisation de \'[ ]\' définit un scope. Les paramètres de couleur et de largeur sont attachés à un scope, les modifier dans un scope ne les modifient pas dans le scope parent.'),
+					$author$project$Manual$br,
+					$elm$html$Html$text('Dans le cas de \'Repeat\', il est possible d\'omettre les crochets s\'il n\'y a qu\'une seule instruction :'),
+					$author$project$Manual$br,
+					$author$project$Manual$code(
+					_List_fromArray(
+						[
+							$elm$html$Html$text('\'Repeat 4 [Call arc90]\' -> \'Repeat 4 Call arc90\'')
+						]))
 				])),
 			$author$project$Manual$h2('Instructions'),
 			$author$project$Manual$h3('Color <color>'),
