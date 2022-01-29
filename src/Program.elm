@@ -8,10 +8,13 @@ import Set exposing (Set)
 {-| Instructions
 -}
 type Inst
-    = Forward Float
+    = -- Advance forward using all defined params
+      Forward Float
+      -- Turn left in degrees
     | Left Float
+      -- Turn right in degrees
     | Right Float
-      -- Repeat a list of instructions
+      -- Repeat an instruction
     | Repeat Int Proc
       -- Call a procedure by its name
     | Call String
@@ -19,6 +22,8 @@ type Inst
     | Color String
       -- Change stroke width
     | Width Float
+      -- Save stack
+    | Scope Proc
 
 
 {-| Procedure aka list of instructions
@@ -60,7 +65,7 @@ pRepeat =
         |. spaces
         |= int
         |. spaces
-        |= lazy (\_ -> pProc)
+        |= pInstOrProc
 
 
 pIdentifier =
@@ -127,9 +132,16 @@ pWidth =
         |= float
 
 
+pScope =
+    succeed Scope
+        |= lazy (\_ -> pProc)
+
+
+{-| Parse an instruction
+-}
 pInst : Parser Inst
 pInst =
-    oneOf [ pForward, pLeft, pRight, pRepeat, pCall, pColorInst, pWidth ]
+    oneOf [ pForward, pLeft, pRight, pRepeat, pCall, pColorInst, pWidth, pScope ]
 
 
 {-| Parser for a procedure, should be able to parse this :
@@ -139,7 +151,16 @@ pInst =
 -}
 pProc : Parser Proc
 pProc =
-    sequence { start = "[", separator = ",", end = "]", spaces = spaces, item = pInst, trailing = Optional }
+    sequence { start = "[", separator = ",", end = "]", spaces = spaces, item = lazy (\_ -> pInst), trailing = Optional }
+
+
+pInstAsProc =
+    succeed (\inst -> [ inst ])
+        |= lazy (\_ -> pInst)
+
+
+pInstOrProc =
+    oneOf [ pProc, pInstAsProc ]
 
 
 {-| Parser for a whole program, should be able to parse this :
@@ -183,27 +204,34 @@ type ProgramError
     | NoMain -- No main procedure defined
 
 
+{-| Create a list of the calls made from this instruction
+-}
+callGraphInst : Inst -> List String
+callGraphInst inst =
+    case inst of
+        Call callee ->
+            [ callee ]
+
+        Repeat _ proc ->
+            callGraphProc proc
+
+        Scope proc ->
+            callGraphProc proc
+
+        _ ->
+            []
+
+
 {-| Create a list of the calls made from this procedure
 -}
+callGraphProc : Proc -> List String
 callGraphProc proc =
-    List.foldl
-        (\inst acc ->
-            case inst of
-                Call callee ->
-                    acc ++ [ callee ]
-
-                Repeat n subProc ->
-                    acc ++ callGraphProc subProc
-
-                _ ->
-                    acc
-        )
-        []
-        proc
+    List.concatMap (\inst -> callGraphInst inst) proc
 
 
 {-| Create a call graph of a program as a dict
 -}
+callGraph : Program -> Dict String (List String)
 callGraph prog =
     Dict.map (\k v -> callGraphProc v) prog
 

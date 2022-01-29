@@ -50,8 +50,4 @@ Le programme est sauvegardé dans le stockage local du navigateur et persiste en
 - Détection d'erreurs de syntaxe
 - Détection de boucles infinies lors des appels
 - Détection des appels invalides
-- Stack pour les paramètres Color et Width (la modification dans une procédure n'affecte pas la procédure qui l'appelle)
-
-## TODO
-
-- Procedure arguments
+- Stack pour les paramètres Color et Width (la modification dans un scope n'affecte pas la scope parent)

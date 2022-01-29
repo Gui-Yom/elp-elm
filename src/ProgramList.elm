@@ -47,6 +47,35 @@ update msg model =
 -- VIEW
 
 
+showInst : Model -> Inst -> Html Msg
+showInst model inst =
+    case inst of
+        Repeat n proc ->
+            li [] [ text ("Repeat " ++ String.fromInt n), showProc model proc ]
+
+        Call procName ->
+            li []
+                [ text "Call "
+                , span
+                    [ classList
+                        [ ( "procRef", True )
+                        , ( "procHover", Maybe.withDefault False (Maybe.map (\def -> def == procName) model.procDefHovered) )
+                        ]
+
+                    -- Events
+                    , onMouseOver (ProcRefHover procName)
+                    , onMouseOut MouseOut
+                    ]
+                    [ text procName ]
+                ]
+
+        Scope proc ->
+            li [] [ showProc model proc ]
+
+        other ->
+            li [] [ text (Debug.toString other) ]
+
+
 {-| Render a procedure instruction list as an html list.
 -}
 showProc : Model -> Proc -> Html Msg
@@ -54,28 +83,7 @@ showProc model proc =
     ul [ class "procList" ]
         (List.map
             (\inst ->
-                case inst of
-                    Repeat n subProg ->
-                        li [] [ text ("Repeat " ++ String.fromInt n), showProc model subProg ]
-
-                    Call procName ->
-                        li []
-                            [ text "Call "
-                            , span
-                                [ classList
-                                    [ ( "procRef", True )
-                                    , ( "procHover", Maybe.withDefault False (Maybe.map (\def -> def == procName) model.procDefHovered) )
-                                    ]
-
-                                -- Events
-                                , onMouseOver (ProcRefHover procName)
-                                , onMouseOut MouseOut
-                                ]
-                                [ text procName ]
-                            ]
-
-                    other ->
-                        li [] [ text (Debug.toString other) ]
+                showInst model inst
             )
             proc
         )
