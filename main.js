@@ -5291,29 +5291,44 @@ var $author$project$Program$SyntaxError = function (a) {
 	return {$: 'SyntaxError', a: a};
 };
 var $author$project$Program$NoMain = {$: 'NoMain'};
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
+	});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
+var $elm$core$List$concatMap = F2(
+	function (f, list) {
+		return $elm$core$List$concat(
+			A2($elm$core$List$map, f, list));
+	});
+var $author$project$Program$callGraphInst = function (inst) {
+	switch (inst.$) {
+		case 'Call':
+			var callee = inst.a;
+			return _List_fromArray(
+				[callee]);
+		case 'Repeat':
+			var proc = inst.b;
+			return $author$project$Program$callGraphProc(proc);
+		case 'Scope':
+			var proc = inst.a;
+			return $author$project$Program$callGraphProc(proc);
+		default:
+			return _List_Nil;
+	}
+};
 var $author$project$Program$callGraphProc = function (proc) {
-	return A3(
-		$elm$core$List$foldl,
-		F2(
-			function (inst, acc) {
-				switch (inst.$) {
-					case 'Call':
-						var callee = inst.a;
-						return _Utils_ap(
-							acc,
-							_List_fromArray(
-								[callee]));
-					case 'Repeat':
-						var n = inst.a;
-						var subProc = inst.b;
-						return _Utils_ap(
-							acc,
-							$author$project$Program$callGraphProc(subProc));
-					default:
-						return acc;
-				}
-			}),
-		_List_Nil,
+	return A2(
+		$elm$core$List$concatMap,
+		function (inst) {
+			return $author$project$Program$callGraphInst(inst);
+		},
 		proc);
 };
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
@@ -5360,22 +5375,6 @@ var $author$project$Program$Loop = function (a) {
 var $author$project$Program$UndefinedProc = function (a) {
 	return {$: 'UndefinedProc', a: a};
 };
-var $elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
-		}
-	});
-var $elm$core$List$concat = function (lists) {
-	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
-};
-var $elm$core$List$concatMap = F2(
-	function (f, list) {
-		return $elm$core$List$concat(
-			A2($elm$core$List$map, f, list));
-	});
 var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$get = F2(
 	function (targetKey, dict) {
@@ -5872,6 +5871,9 @@ var $author$project$Program$Repeat = F2(
 	function (a, b) {
 		return {$: 'Repeat', a: a, b: b};
 	});
+var $author$project$Program$Scope = function (a) {
+	return {$: 'Scope', a: a};
+};
 var $elm$parser$Parser$ExpectingInt = {$: 'ExpectingInt'};
 var $elm$parser$Parser$Advanced$consumeBase = _Parser_consumeBase;
 var $elm$parser$Parser$Advanced$consumeBase16 = _Parser_consumeBase16;
@@ -6625,17 +6627,6 @@ var $elm$parser$Parser$sequence = function (i) {
 			trailing: $elm$parser$Parser$toAdvancedTrailing(i.trailing)
 		});
 };
-function $author$project$Program$cyclic$pProc() {
-	return $elm$parser$Parser$sequence(
-		{
-			end: ']',
-			item: $author$project$Program$cyclic$pInst(),
-			separator: ',',
-			spaces: $elm$parser$Parser$spaces,
-			start: '[',
-			trailing: $elm$parser$Parser$Optional
-		});
-}
 function $author$project$Program$cyclic$pInst() {
 	return $elm$parser$Parser$oneOf(
 		_List_fromArray(
@@ -6646,7 +6637,8 @@ function $author$project$Program$cyclic$pInst() {
 				$author$project$Program$cyclic$pRepeat(),
 				$author$project$Program$pCall,
 				$author$project$Program$pColorInst,
-				$author$project$Program$pWidth
+				$author$project$Program$pWidth,
+				$author$project$Program$cyclic$pScope()
 			]));
 }
 function $author$project$Program$cyclic$pRepeat() {
@@ -6662,16 +6654,53 @@ function $author$project$Program$cyclic$pRepeat() {
 					$elm$parser$Parser$keyword('Repeat')),
 				$elm$parser$Parser$spaces),
 			A2($elm$parser$Parser$ignorer, $elm$parser$Parser$int, $elm$parser$Parser$spaces)),
+		$author$project$Program$cyclic$pInstOrProc());
+}
+function $author$project$Program$cyclic$pInstOrProc() {
+	return $elm$parser$Parser$oneOf(
+		_List_fromArray(
+			[
+				$author$project$Program$cyclic$pProc(),
+				$author$project$Program$cyclic$pInstAsProc()
+			]));
+}
+function $author$project$Program$cyclic$pInstAsProc() {
+	return A2(
+		$elm$parser$Parser$keeper,
+		$elm$parser$Parser$succeed(
+			function (inst) {
+				return _List_fromArray(
+					[inst]);
+			}),
+		$elm$parser$Parser$lazy(
+			function (_v2) {
+				return $author$project$Program$cyclic$pInst();
+			}));
+}
+function $author$project$Program$cyclic$pProc() {
+	return $elm$parser$Parser$sequence(
+		{
+			end: ']',
+			item: $elm$parser$Parser$lazy(
+				function (_v1) {
+					return $author$project$Program$cyclic$pInst();
+				}),
+			separator: ',',
+			spaces: $elm$parser$Parser$spaces,
+			start: '[',
+			trailing: $elm$parser$Parser$Optional
+		});
+}
+function $author$project$Program$cyclic$pScope() {
+	return A2(
+		$elm$parser$Parser$keeper,
+		$elm$parser$Parser$succeed($author$project$Program$Scope),
 		$elm$parser$Parser$lazy(
 			function (_v0) {
 				return $author$project$Program$cyclic$pProc();
 			}));
 }
 try {
-	var $author$project$Program$pProc = $author$project$Program$cyclic$pProc();
-	$author$project$Program$cyclic$pProc = function () {
-		return $author$project$Program$pProc;
-	};
 	var $author$project$Program$pInst = $author$project$Program$cyclic$pInst();
 	$author$project$Program$cyclic$pInst = function () {
 		return $author$project$Program$pInst;
@@ -6680,8 +6709,24 @@ try {
 	$author$project$Program$cyclic$pRepeat = function () {
 		return $author$project$Program$pRepeat;
 	};
+	var $author$project$Program$pInstOrProc = $author$project$Program$cyclic$pInstOrProc();
+	$author$project$Program$cyclic$pInstOrProc = function () {
+		return $author$project$Program$pInstOrProc;
+	};
+	var $author$project$Program$pInstAsProc = $author$project$Program$cyclic$pInstAsProc();
+	$author$project$Program$cyclic$pInstAsProc = function () {
+		return $author$project$Program$pInstAsProc;
+	};
+	var $author$project$Program$pProc = $author$project$Program$cyclic$pProc();
+	$author$project$Program$cyclic$pProc = function () {
+		return $author$project$Program$pProc;
+	};
+	var $author$project$Program$pScope = $author$project$Program$cyclic$pScope();
+	$author$project$Program$cyclic$pScope = function () {
+		return $author$project$Program$pScope;
+	};
 } catch ($) {
-	throw 'Some top-level definitions from `Program` are causing infinite recursion:\n\n  ┌─────┐\n  │    pProc\n  │     ↓\n  │    pInst\n  │     ↓\n  │    pRepeat\n  └─────┘\n\nThese errors are very tricky, so read https://elm-lang.org/0.19.1/bad-recursion to learn how to fix it!';}
+	throw 'Some top-level definitions from `Program` are causing infinite recursion:\n\n  ┌─────┐\n  │    pInst\n  │     ↓\n  │    pRepeat\n  │     ↓\n  │    pInstOrProc\n  │     ↓\n  │    pInstAsProc\n  │     ↓\n  │    pProc\n  │     ↓\n  │    pScope\n  └─────┘\n\nThese errors are very tricky, so read https://elm-lang.org/0.19.1/bad-recursion to learn how to fix it!';}
 var $author$project$Program$pProgram = A2(
 	$elm$parser$Parser$keeper,
 	A2(
@@ -6964,6 +7009,13 @@ var $author$project$Canvas$correctAngle = function (angle) {
 	return (angle >= 360) ? (angle - 360) : ((angle < 0) ? (angle + 360) : angle);
 };
 var $elm$core$Basics$cos = _Basics_cos;
+var $elm$core$Basics$pi = _Basics_pi;
+var $elm$core$Basics$degrees = function (angleInDegrees) {
+	return (angleInDegrees * $elm$core$Basics$pi) / 180;
+};
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
 var $elm$core$Tuple$mapSecond = F2(
 	function (func, _v0) {
 		var x = _v0.a;
@@ -6972,159 +7024,141 @@ var $elm$core$Tuple$mapSecond = F2(
 			x,
 			func(y));
 	});
-var $author$project$Canvas$cursorStack = F3(
-	function (op1, op2, cursor) {
-		var _v0 = op1(cursor);
-		var newCursor = _v0.a;
-		var svg = _v0.b;
-		return A2(
-			$elm$core$Tuple$mapSecond,
-			$elm$core$List$append(svg),
-			op2(
-				_Utils_update(
-					newCursor,
-					{color: cursor.color, width: cursor.width})));
-	});
-var $elm$core$Basics$pi = _Basics_pi;
-var $elm$core$Basics$degrees = function (angleInDegrees) {
-	return (angleInDegrees * $elm$core$Basics$pi) / 180;
-};
-var $elm$core$String$fromFloat = _String_fromNumber;
-var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
-var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
 var $elm$core$Basics$sin = _Basics_sin;
 var $elm$svg$Svg$Attributes$style = _VirtualDom_attribute('style');
 var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
 var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
 var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
 var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
-var $author$project$Canvas$drawProc = F3(
-	function (prog, proc, cursor) {
-		drawProc:
+var $author$project$Canvas$drawInst = F3(
+	function (prog, inst, cursor) {
+		drawInst:
 		while (true) {
-			if (!proc.b) {
-				return _Utils_Tuple2(cursor, _List_Nil);
-			} else {
-				var inst = proc.a;
-				var subProc = proc.b;
-				switch (inst.$) {
-					case 'Forward':
-						var length = inst.a;
-						var newCursor = _Utils_update(
-							cursor,
-							{
-								x: cursor.x + (length * $elm$core$Basics$cos(
-									$elm$core$Basics$degrees(cursor.angle))),
-								y: cursor.y + (length * $elm$core$Basics$sin(
-									$elm$core$Basics$degrees(cursor.angle)))
-							});
-						return A2(
-							$elm$core$Tuple$mapSecond,
-							$elm$core$List$append(
+			switch (inst.$) {
+				case 'Forward':
+					var length = inst.a;
+					var newCursor = _Utils_update(
+						cursor,
+						{
+							x: cursor.x + (length * $elm$core$Basics$cos(
+								$elm$core$Basics$degrees(cursor.angle))),
+							y: cursor.y + (length * $elm$core$Basics$sin(
+								$elm$core$Basics$degrees(cursor.angle)))
+						});
+					return _Utils_Tuple2(
+						newCursor,
+						_List_fromArray(
+							[
+								A2(
+								$elm$svg$Svg$line,
 								_List_fromArray(
 									[
-										A2(
-										$elm$svg$Svg$line,
-										_List_fromArray(
-											[
-												$elm$svg$Svg$Attributes$x1(
-												$elm$core$String$fromFloat(cursor.x)),
-												$elm$svg$Svg$Attributes$y1(
-												$elm$core$String$fromFloat(cursor.y)),
-												$elm$svg$Svg$Attributes$x2(
-												$elm$core$String$fromFloat(newCursor.x)),
-												$elm$svg$Svg$Attributes$y2(
-												$elm$core$String$fromFloat(newCursor.y)),
-												$elm$svg$Svg$Attributes$style(
-												'stroke:' + (cursor.color + (';stroke-width:' + $elm$core$String$fromFloat(cursor.width))))
-											]),
-										_List_Nil)
-									])),
-							A3($author$project$Canvas$drawProc, prog, subProc, newCursor));
-					case 'Left':
-						var n = inst.a;
-						var $temp$prog = prog,
-							$temp$proc = subProc,
-							$temp$cursor = _Utils_update(
+										$elm$svg$Svg$Attributes$x1(
+										$elm$core$String$fromFloat(cursor.x)),
+										$elm$svg$Svg$Attributes$y1(
+										$elm$core$String$fromFloat(cursor.y)),
+										$elm$svg$Svg$Attributes$x2(
+										$elm$core$String$fromFloat(newCursor.x)),
+										$elm$svg$Svg$Attributes$y2(
+										$elm$core$String$fromFloat(newCursor.y)),
+										$elm$svg$Svg$Attributes$style(
+										'stroke:' + (cursor.color + (';stroke-width:' + $elm$core$String$fromFloat(cursor.width))))
+									]),
+								_List_Nil)
+							]));
+				case 'Left':
+					var n = inst.a;
+					return _Utils_Tuple2(
+						_Utils_update(
 							cursor,
 							{
 								angle: $author$project$Canvas$correctAngle(cursor.angle - n)
-							});
-						prog = $temp$prog;
-						proc = $temp$proc;
-						cursor = $temp$cursor;
-						continue drawProc;
-					case 'Right':
-						var n = inst.a;
-						var $temp$prog = prog,
-							$temp$proc = subProc,
-							$temp$cursor = _Utils_update(
+							}),
+						_List_Nil);
+				case 'Right':
+					var n = inst.a;
+					return _Utils_Tuple2(
+						_Utils_update(
 							cursor,
 							{
 								angle: $author$project$Canvas$correctAngle(cursor.angle + n)
-							});
-						prog = $temp$prog;
-						proc = $temp$proc;
-						cursor = $temp$cursor;
-						continue drawProc;
-					case 'Color':
-						var col = inst.a;
-						var $temp$prog = prog,
-							$temp$proc = subProc,
-							$temp$cursor = _Utils_update(
+							}),
+						_List_Nil);
+				case 'Color':
+					var col = inst.a;
+					return _Utils_Tuple2(
+						_Utils_update(
 							cursor,
-							{color: col});
-						prog = $temp$prog;
-						proc = $temp$proc;
-						cursor = $temp$cursor;
-						continue drawProc;
-					case 'Width':
-						var width = inst.a;
-						var $temp$prog = prog,
-							$temp$proc = subProc,
-							$temp$cursor = _Utils_update(
+							{color: col}),
+						_List_Nil);
+				case 'Width':
+					var width = inst.a;
+					return _Utils_Tuple2(
+						_Utils_update(
 							cursor,
-							{width: width});
-						prog = $temp$prog;
-						proc = $temp$proc;
-						cursor = $temp$cursor;
-						continue drawProc;
-					case 'Repeat':
-						var n = inst.a;
-						var toRepeat = inst.b;
-						return (n <= 1) ? A3(
-							$author$project$Canvas$cursorStack,
-							A2($author$project$Canvas$drawProc, prog, toRepeat),
-							A2($author$project$Canvas$drawProc, prog, subProc),
-							cursor) : A3(
-							$author$project$Canvas$cursorStack,
-							A2($author$project$Canvas$drawProc, prog, toRepeat),
-							A2(
-								$author$project$Canvas$drawProc,
+							{width: width}),
+						_List_Nil);
+				case 'Repeat':
+					var n = inst.a;
+					var proc = inst.b;
+					if (n <= 1) {
+						return A3($author$project$Canvas$drawProc, prog, proc, cursor);
+					} else {
+						var _v2 = A3($author$project$Canvas$drawProc, prog, proc, cursor);
+						var newCursor = _v2.a;
+						var svg = _v2.b;
+						return A2(
+							$elm$core$Tuple$mapSecond,
+							$elm$core$Basics$append(svg),
+							A3(
+								$author$project$Canvas$drawInst,
 								prog,
-								_Utils_ap(
-									_List_fromArray(
-										[
-											A2($author$project$Program$Repeat, n - 1, toRepeat)
-										]),
-									subProc)),
-							cursor);
-					default:
-						var procName = inst.a;
-						return A3(
-							$author$project$Canvas$cursorStack,
-							A2(
-								$author$project$Canvas$drawProc,
-								prog,
-								A2(
-									$elm$core$Maybe$withDefault,
-									_List_Nil,
-									A2($elm$core$Dict$get, procName, prog))),
-							A2($author$project$Canvas$drawProc, prog, subProc),
-							cursor);
-				}
+								A2($author$project$Program$Repeat, n - 1, proc),
+								_Utils_update(
+									newCursor,
+									{color: cursor.color, width: cursor.width})));
+					}
+				case 'Call':
+					var procName = inst.a;
+					var $temp$prog = prog,
+						$temp$inst = $author$project$Program$Scope(
+						A2(
+							$elm$core$Maybe$withDefault,
+							_List_Nil,
+							A2($elm$core$Dict$get, procName, prog))),
+						$temp$cursor = cursor;
+					prog = $temp$prog;
+					inst = $temp$inst;
+					cursor = $temp$cursor;
+					continue drawInst;
+				default:
+					var scope = inst.a;
+					var _v3 = A3($author$project$Canvas$drawProc, prog, scope, cursor);
+					var newCursor = _v3.a;
+					var svg = _v3.b;
+					return _Utils_Tuple2(
+						_Utils_update(
+							newCursor,
+							{color: cursor.color, width: cursor.width}),
+						svg);
 			}
 		}
+	});
+var $author$project$Canvas$drawProc = F3(
+	function (prog, proc, cursor) {
+		return A3(
+			$elm$core$List$foldl,
+			F2(
+				function (inst, _v0) {
+					var cur = _v0.a;
+					var svg = _v0.b;
+					return A2(
+						$elm$core$Tuple$mapSecond,
+						$elm$core$Basics$append(svg),
+						A3($author$project$Canvas$drawInst, prog, inst, cur));
+				}),
+			_Utils_Tuple2(cursor, _List_Nil),
+			proc);
 	});
 var $elm$svg$Svg$Attributes$id = _VirtualDom_attribute('id');
 var $elm$core$Tuple$second = function (_v0) {
@@ -7371,6 +7405,79 @@ var $author$project$ProgramList$ProcRefHover = function (a) {
 	return {$: 'ProcRefHover', a: a};
 };
 var $elm$html$Html$span = _VirtualDom_node('span');
+var $author$project$ProgramList$showInst = F2(
+	function (model, inst) {
+		switch (inst.$) {
+			case 'Repeat':
+				var n = inst.a;
+				var proc = inst.b;
+				return A2(
+					$elm$html$Html$li,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							'Repeat ' + $elm$core$String$fromInt(n)),
+							A2($author$project$ProgramList$showProc, model, proc)
+						]));
+			case 'Call':
+				var procName = inst.a;
+				return A2(
+					$elm$html$Html$li,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Call '),
+							A2(
+							$elm$html$Html$span,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$classList(
+									_List_fromArray(
+										[
+											_Utils_Tuple2('procRef', true),
+											_Utils_Tuple2(
+											'procHover',
+											A2(
+												$elm$core$Maybe$withDefault,
+												false,
+												A2(
+													$elm$core$Maybe$map,
+													function (def) {
+														return _Utils_eq(def, procName);
+													},
+													model.procDefHovered)))
+										])),
+									$elm$html$Html$Events$onMouseOver(
+									$author$project$ProgramList$ProcRefHover(procName)),
+									$elm$html$Html$Events$onMouseOut($author$project$ProgramList$MouseOut)
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(procName)
+								]))
+						]));
+			case 'Scope':
+				var proc = inst.a;
+				return A2(
+					$elm$html$Html$li,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2($author$project$ProgramList$showProc, model, proc)
+						]));
+			default:
+				var other = inst;
+				return A2(
+					$elm$html$Html$li,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							$elm$core$Debug$toString(other))
+						]));
+		}
+	});
 var $author$project$ProgramList$showProc = F2(
 	function (model, proc) {
 		return A2(
@@ -7382,67 +7489,7 @@ var $author$project$ProgramList$showProc = F2(
 			A2(
 				$elm$core$List$map,
 				function (inst) {
-					switch (inst.$) {
-						case 'Repeat':
-							var n = inst.a;
-							var subProg = inst.b;
-							return A2(
-								$elm$html$Html$li,
-								_List_Nil,
-								_List_fromArray(
-									[
-										$elm$html$Html$text(
-										'Repeat ' + $elm$core$String$fromInt(n)),
-										A2($author$project$ProgramList$showProc, model, subProg)
-									]));
-						case 'Call':
-							var procName = inst.a;
-							return A2(
-								$elm$html$Html$li,
-								_List_Nil,
-								_List_fromArray(
-									[
-										$elm$html$Html$text('Call '),
-										A2(
-										$elm$html$Html$span,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$classList(
-												_List_fromArray(
-													[
-														_Utils_Tuple2('procRef', true),
-														_Utils_Tuple2(
-														'procHover',
-														A2(
-															$elm$core$Maybe$withDefault,
-															false,
-															A2(
-																$elm$core$Maybe$map,
-																function (def) {
-																	return _Utils_eq(def, procName);
-																},
-																model.procDefHovered)))
-													])),
-												$elm$html$Html$Events$onMouseOver(
-												$author$project$ProgramList$ProcRefHover(procName)),
-												$elm$html$Html$Events$onMouseOut($author$project$ProgramList$MouseOut)
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text(procName)
-											]))
-									]));
-						default:
-							var other = inst;
-							return A2(
-								$elm$html$Html$li,
-								_List_Nil,
-								_List_fromArray(
-									[
-										$elm$html$Html$text(
-										$elm$core$Debug$toString(other))
-									]));
-					}
+					return A2($author$project$ProgramList$showInst, model, inst);
 				},
 				proc));
 	});
