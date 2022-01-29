@@ -5290,37 +5290,91 @@ var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Program$SyntaxError = function (a) {
 	return {$: 'SyntaxError', a: a};
 };
+var $author$project$Program$NoMain = {$: 'NoMain'};
+var $author$project$Program$callGraphProc = function (proc) {
+	return A3(
+		$elm$core$List$foldl,
+		F2(
+			function (inst, acc) {
+				switch (inst.$) {
+					case 'Call':
+						var callee = inst.a;
+						return _Utils_ap(
+							acc,
+							_List_fromArray(
+								[callee]));
+					case 'Repeat':
+						var n = inst.a;
+						var subProc = inst.b;
+						return _Utils_ap(
+							acc,
+							$author$project$Program$callGraphProc(subProc));
+					default:
+						return acc;
+				}
+			}),
+		_List_Nil,
+		proc);
+};
+var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var $elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
+	});
+var $elm$core$Dict$map = F2(
+	function (func, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				A2(func, key, value),
+				A2($elm$core$Dict$map, func, left),
+				A2($elm$core$Dict$map, func, right));
+		}
+	});
+var $author$project$Program$callGraph = function (prog) {
+	return A2(
+		$elm$core$Dict$map,
+		F2(
+			function (k, v) {
+				return $author$project$Program$callGraphProc(v);
+			}),
+		prog);
+};
+var $elm$core$Set$Set_elm_builtin = function (a) {
+	return {$: 'Set_elm_builtin', a: a};
+};
+var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
+var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
 var $author$project$Program$Loop = function (a) {
 	return {$: 'Loop', a: a};
 };
-var $author$project$Program$NoMain = {$: 'NoMain'};
-var $author$project$Program$UnknownProc = function (a) {
-	return {$: 'UnknownProc', a: a};
+var $author$project$Program$UndefinedProc = function (a) {
+	return {$: 'UndefinedProc', a: a};
 };
-var $elm$core$Dict$foldl = F3(
-	function (func, acc, dict) {
-		foldl:
-		while (true) {
-			if (dict.$ === 'RBEmpty_elm_builtin') {
-				return acc;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var $temp$func = func,
-					$temp$acc = A3(
-					func,
-					key,
-					value,
-					A3($elm$core$Dict$foldl, func, acc, left)),
-					$temp$dict = right;
-				func = $temp$func;
-				acc = $temp$acc;
-				dict = $temp$dict;
-				continue foldl;
-			}
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
 		}
+	});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
+var $elm$core$List$concatMap = F2(
+	function (f, list) {
+		return $elm$core$List$concat(
+			A2($elm$core$List$map, f, list));
 	});
 var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$get = F2(
@@ -5354,118 +5408,7 @@ var $elm$core$Dict$get = F2(
 			}
 		}
 	});
-var $elm$core$Dict$member = F2(
-	function (key, dict) {
-		var _v0 = A2($elm$core$Dict$get, key, dict);
-		if (_v0.$ === 'Just') {
-			return true;
-		} else {
-			return false;
-		}
-	});
-var $author$project$Program$checkProgram = function (prog) {
-	return _Utils_ap(
-		A2($elm$core$Dict$member, 'main', prog) ? _List_Nil : _List_fromArray(
-			[$author$project$Program$NoMain]),
-		A3(
-			$elm$core$Dict$foldl,
-			F3(
-				function (name, proc, errors) {
-					return _Utils_ap(
-						errors,
-						A3(
-							$elm$core$List$foldl,
-							F2(
-								function (inst, procErrors) {
-									return _Utils_ap(
-										procErrors,
-										function () {
-											if (inst.$ === 'Call') {
-												var callee = inst.a;
-												return A2($elm$core$Dict$member, callee, prog) ? (_Utils_eq(callee, name) ? _List_fromArray(
-													[
-														$author$project$Program$Loop(callee)
-													]) : _List_Nil) : _List_fromArray(
-													[
-														$author$project$Program$UnknownProc(callee)
-													]);
-											} else {
-												return _List_Nil;
-											}
-										}());
-								}),
-							_List_Nil,
-							proc));
-				}),
-			_List_Nil,
-			prog));
-};
-var $elm$parser$Parser$Done = function (a) {
-	return {$: 'Done', a: a};
-};
-var $elm$parser$Parser$Loop = function (a) {
-	return {$: 'Loop', a: a};
-};
-var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
-var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
-var $elm$core$Basics$always = F2(
-	function (a, _v0) {
-		return a;
-	});
-var $elm$parser$Parser$Advanced$Bad = F2(
-	function (a, b) {
-		return {$: 'Bad', a: a, b: b};
-	});
-var $elm$parser$Parser$Advanced$Good = F3(
-	function (a, b, c) {
-		return {$: 'Good', a: a, b: b, c: c};
-	});
-var $elm$parser$Parser$Advanced$Parser = function (a) {
-	return {$: 'Parser', a: a};
-};
-var $elm$parser$Parser$Advanced$map2 = F3(
-	function (func, _v0, _v1) {
-		var parseA = _v0.a;
-		var parseB = _v1.a;
-		return $elm$parser$Parser$Advanced$Parser(
-			function (s0) {
-				var _v2 = parseA(s0);
-				if (_v2.$ === 'Bad') {
-					var p = _v2.a;
-					var x = _v2.b;
-					return A2($elm$parser$Parser$Advanced$Bad, p, x);
-				} else {
-					var p1 = _v2.a;
-					var a = _v2.b;
-					var s1 = _v2.c;
-					var _v3 = parseB(s1);
-					if (_v3.$ === 'Bad') {
-						var p2 = _v3.a;
-						var x = _v3.b;
-						return A2($elm$parser$Parser$Advanced$Bad, p1 || p2, x);
-					} else {
-						var p2 = _v3.a;
-						var b = _v3.b;
-						var s2 = _v3.c;
-						return A3(
-							$elm$parser$Parser$Advanced$Good,
-							p1 || p2,
-							A2(func, a, b),
-							s2);
-					}
-				}
-			});
-	});
-var $elm$parser$Parser$Advanced$ignorer = F2(
-	function (keepParser, ignoreParser) {
-		return A3($elm$parser$Parser$Advanced$map2, $elm$core$Basics$always, keepParser, ignoreParser);
-	});
-var $elm$parser$Parser$ignorer = $elm$parser$Parser$Advanced$ignorer;
 var $elm$core$Dict$Black = {$: 'Black'};
-var $elm$core$Dict$RBNode_elm_builtin = F5(
-	function (a, b, c, d, e) {
-		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
-	});
 var $elm$core$Dict$Red = {$: 'Red'};
 var $elm$core$Dict$balance = F5(
 	function (color, key, value, left, right) {
@@ -5569,6 +5512,125 @@ var $elm$core$Dict$insert = F3(
 			return x;
 		}
 	});
+var $elm$core$Set$insert = F2(
+	function (key, _v0) {
+		var dict = _v0.a;
+		return $elm$core$Set$Set_elm_builtin(
+			A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict));
+	});
+var $elm$core$Dict$member = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$get, key, dict);
+		if (_v0.$ === 'Just') {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var $elm$core$Set$member = F2(
+	function (key, _v0) {
+		var dict = _v0.a;
+		return A2($elm$core$Dict$member, key, dict);
+	});
+var $author$project$Program$traverseCallGraph = F3(
+	function (graph, visited, next) {
+		if (A2($elm$core$Set$member, next, visited)) {
+			return _List_fromArray(
+				[
+					$author$project$Program$Loop(visited)
+				]);
+		} else {
+			var children = A2($elm$core$Dict$get, next, graph);
+			if (children.$ === 'Just') {
+				var nexts = children.a;
+				return A2(
+					$elm$core$List$concatMap,
+					function (n) {
+						return A3(
+							$author$project$Program$traverseCallGraph,
+							graph,
+							A2($elm$core$Set$insert, next, visited),
+							n);
+					},
+					nexts);
+			} else {
+				return _List_fromArray(
+					[
+						$author$project$Program$UndefinedProc(next)
+					]);
+			}
+		}
+	});
+var $author$project$Program$checkCallGraph = function (prog) {
+	return A3(
+		$author$project$Program$traverseCallGraph,
+		$author$project$Program$callGraph(prog),
+		$elm$core$Set$empty,
+		'main');
+};
+var $author$project$Program$checkProgram = function (prog) {
+	return A2($elm$core$Dict$member, 'main', prog) ? $author$project$Program$checkCallGraph(prog) : _List_fromArray(
+		[$author$project$Program$NoMain]);
+};
+var $elm$parser$Parser$Done = function (a) {
+	return {$: 'Done', a: a};
+};
+var $elm$parser$Parser$Loop = function (a) {
+	return {$: 'Loop', a: a};
+};
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
+var $elm$parser$Parser$Advanced$Bad = F2(
+	function (a, b) {
+		return {$: 'Bad', a: a, b: b};
+	});
+var $elm$parser$Parser$Advanced$Good = F3(
+	function (a, b, c) {
+		return {$: 'Good', a: a, b: b, c: c};
+	});
+var $elm$parser$Parser$Advanced$Parser = function (a) {
+	return {$: 'Parser', a: a};
+};
+var $elm$parser$Parser$Advanced$map2 = F3(
+	function (func, _v0, _v1) {
+		var parseA = _v0.a;
+		var parseB = _v1.a;
+		return $elm$parser$Parser$Advanced$Parser(
+			function (s0) {
+				var _v2 = parseA(s0);
+				if (_v2.$ === 'Bad') {
+					var p = _v2.a;
+					var x = _v2.b;
+					return A2($elm$parser$Parser$Advanced$Bad, p, x);
+				} else {
+					var p1 = _v2.a;
+					var a = _v2.b;
+					var s1 = _v2.c;
+					var _v3 = parseB(s1);
+					if (_v3.$ === 'Bad') {
+						var p2 = _v3.a;
+						var x = _v3.b;
+						return A2($elm$parser$Parser$Advanced$Bad, p1 || p2, x);
+					} else {
+						var p2 = _v3.a;
+						var b = _v3.b;
+						var s2 = _v3.c;
+						return A3(
+							$elm$parser$Parser$Advanced$Good,
+							p1 || p2,
+							A2(func, a, b),
+							s2);
+					}
+				}
+			});
+	});
+var $elm$parser$Parser$Advanced$ignorer = F2(
+	function (keepParser, ignoreParser) {
+		return A3($elm$parser$Parser$Advanced$map2, $elm$core$Basics$always, keepParser, ignoreParser);
+	});
+var $elm$parser$Parser$ignorer = $elm$parser$Parser$Advanced$ignorer;
 var $elm$parser$Parser$Advanced$keeper = F2(
 	function (parseFunc, parseArg) {
 		return A3($elm$parser$Parser$Advanced$map2, $elm$core$Basics$apL, parseFunc, parseArg);
@@ -5708,10 +5770,6 @@ var $elm$parser$Parser$Advanced$oneOf = function (parsers) {
 		});
 };
 var $elm$parser$Parser$oneOf = $elm$parser$Parser$Advanced$oneOf;
-var $elm$core$Set$Set_elm_builtin = function (a) {
-	return {$: 'Set_elm_builtin', a: a};
-};
-var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
 var $elm$parser$Parser$ExpectingVariable = {$: 'ExpectingVariable'};
 var $elm$parser$Parser$Advanced$AddRight = F2(
 	function (a, b) {
@@ -5729,11 +5787,6 @@ var $elm$parser$Parser$Advanced$fromState = F2(
 			A4($elm$parser$Parser$Advanced$DeadEnd, s.row, s.col, x, s.context));
 	});
 var $elm$parser$Parser$Advanced$isSubChar = _Parser_isSubChar;
-var $elm$core$Set$member = F2(
-	function (key, _v0) {
-		var dict = _v0.a;
-		return A2($elm$core$Dict$member, key, dict);
-	});
 var $elm$core$Basics$negate = function (n) {
 	return -n;
 };
@@ -6911,6 +6964,27 @@ var $author$project$Canvas$correctAngle = function (angle) {
 	return (angle >= 360) ? (angle - 360) : ((angle < 0) ? (angle + 360) : angle);
 };
 var $elm$core$Basics$cos = _Basics_cos;
+var $elm$core$Tuple$mapSecond = F2(
+	function (func, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			x,
+			func(y));
+	});
+var $author$project$Canvas$cursorStack = F3(
+	function (op1, op2, cursor) {
+		var _v0 = op1(cursor);
+		var newCursor = _v0.a;
+		var svg = _v0.b;
+		return A2(
+			$elm$core$Tuple$mapSecond,
+			$elm$core$List$append(svg),
+			op2(
+				_Utils_update(
+					newCursor,
+					{color: cursor.color, width: cursor.width})));
+	});
 var $elm$core$Basics$pi = _Basics_pi;
 var $elm$core$Basics$degrees = function (angleInDegrees) {
 	return (angleInDegrees * $elm$core$Basics$pi) / 180;
@@ -6929,7 +7003,7 @@ var $author$project$Canvas$drawProc = F3(
 		drawProc:
 		while (true) {
 			if (!proc.b) {
-				return _List_Nil;
+				return _Utils_Tuple2(cursor, _List_Nil);
 			} else {
 				var inst = proc.a;
 				var subProc = proc.b;
@@ -6944,26 +7018,28 @@ var $author$project$Canvas$drawProc = F3(
 								y: cursor.y + (length * $elm$core$Basics$sin(
 									$elm$core$Basics$degrees(cursor.angle)))
 							});
-						return _Utils_ap(
-							_List_fromArray(
-								[
-									A2(
-									$elm$svg$Svg$line,
-									_List_fromArray(
-										[
-											$elm$svg$Svg$Attributes$x1(
-											$elm$core$String$fromFloat(cursor.x)),
-											$elm$svg$Svg$Attributes$y1(
-											$elm$core$String$fromFloat(cursor.y)),
-											$elm$svg$Svg$Attributes$x2(
-											$elm$core$String$fromFloat(newCursor.x)),
-											$elm$svg$Svg$Attributes$y2(
-											$elm$core$String$fromFloat(newCursor.y)),
-											$elm$svg$Svg$Attributes$style(
-											'stroke:' + (cursor.color + (';stroke-width:' + $elm$core$String$fromFloat(cursor.width))))
-										]),
-									_List_Nil)
-								]),
+						return A2(
+							$elm$core$Tuple$mapSecond,
+							$elm$core$List$append(
+								_List_fromArray(
+									[
+										A2(
+										$elm$svg$Svg$line,
+										_List_fromArray(
+											[
+												$elm$svg$Svg$Attributes$x1(
+												$elm$core$String$fromFloat(cursor.x)),
+												$elm$svg$Svg$Attributes$y1(
+												$elm$core$String$fromFloat(cursor.y)),
+												$elm$svg$Svg$Attributes$x2(
+												$elm$core$String$fromFloat(newCursor.x)),
+												$elm$svg$Svg$Attributes$y2(
+												$elm$core$String$fromFloat(newCursor.y)),
+												$elm$svg$Svg$Attributes$style(
+												'stroke:' + (cursor.color + (';stroke-width:' + $elm$core$String$fromFloat(cursor.width))))
+											]),
+										_List_Nil)
+									])),
 							A3($author$project$Canvas$drawProc, prog, subProc, newCursor));
 					case 'Left':
 						var n = inst.a;
@@ -6991,47 +7067,6 @@ var $author$project$Canvas$drawProc = F3(
 						proc = $temp$proc;
 						cursor = $temp$cursor;
 						continue drawProc;
-					case 'Repeat':
-						var n = inst.a;
-						var toRepeat = inst.b;
-						if (n <= 1) {
-							var $temp$prog = prog,
-								$temp$proc = _Utils_ap(toRepeat, subProc),
-								$temp$cursor = cursor;
-							prog = $temp$prog;
-							proc = $temp$proc;
-							cursor = $temp$cursor;
-							continue drawProc;
-						} else {
-							var $temp$prog = prog,
-								$temp$proc = _Utils_ap(
-								toRepeat,
-								_Utils_ap(
-									_List_fromArray(
-										[
-											A2($author$project$Program$Repeat, n - 1, toRepeat)
-										]),
-									subProc)),
-								$temp$cursor = cursor;
-							prog = $temp$prog;
-							proc = $temp$proc;
-							cursor = $temp$cursor;
-							continue drawProc;
-						}
-					case 'Call':
-						var procName = inst.a;
-						var $temp$prog = prog,
-							$temp$proc = _Utils_ap(
-							A2(
-								$elm$core$Maybe$withDefault,
-								_List_Nil,
-								A2($elm$core$Dict$get, procName, prog)),
-							subProc),
-							$temp$cursor = cursor;
-						prog = $temp$prog;
-						proc = $temp$proc;
-						cursor = $temp$cursor;
-						continue drawProc;
 					case 'Color':
 						var col = inst.a;
 						var $temp$prog = prog,
@@ -7043,7 +7078,7 @@ var $author$project$Canvas$drawProc = F3(
 						proc = $temp$proc;
 						cursor = $temp$cursor;
 						continue drawProc;
-					default:
+					case 'Width':
 						var width = inst.a;
 						var $temp$prog = prog,
 							$temp$proc = subProc,
@@ -7054,11 +7089,48 @@ var $author$project$Canvas$drawProc = F3(
 						proc = $temp$proc;
 						cursor = $temp$cursor;
 						continue drawProc;
+					case 'Repeat':
+						var n = inst.a;
+						var toRepeat = inst.b;
+						return (n <= 1) ? A3(
+							$author$project$Canvas$cursorStack,
+							A2($author$project$Canvas$drawProc, prog, toRepeat),
+							A2($author$project$Canvas$drawProc, prog, subProc),
+							cursor) : A3(
+							$author$project$Canvas$cursorStack,
+							A2($author$project$Canvas$drawProc, prog, toRepeat),
+							A2(
+								$author$project$Canvas$drawProc,
+								prog,
+								_Utils_ap(
+									_List_fromArray(
+										[
+											A2($author$project$Program$Repeat, n - 1, toRepeat)
+										]),
+									subProc)),
+							cursor);
+					default:
+						var procName = inst.a;
+						return A3(
+							$author$project$Canvas$cursorStack,
+							A2(
+								$author$project$Canvas$drawProc,
+								prog,
+								A2(
+									$elm$core$Maybe$withDefault,
+									_List_Nil,
+									A2($elm$core$Dict$get, procName, prog))),
+							A2($author$project$Canvas$drawProc, prog, subProc),
+							cursor);
 				}
 			}
 		}
 	});
 var $elm$svg$Svg$Attributes$id = _VirtualDom_attribute('id');
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
 var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
 var $author$project$Canvas$view = function (mprog) {
 	return A2(
@@ -7077,7 +7149,7 @@ var $author$project$Canvas$view = function (mprog) {
 						$elm$core$Maybe$withDefault,
 						_List_Nil,
 						A2($elm$core$Dict$get, 'main', prog)),
-					{angle: 0, color: '#FF0000', width: 2, x: 300, y: 300});
+					{angle: 0, color: '#FF0000', width: 2, x: 300, y: 300}).b;
 			} else {
 				return _List_Nil;
 			}
@@ -7109,12 +7181,13 @@ var $author$project$ErrorList$view = function (errors) {
 									case 'SyntaxError':
 										var d = e.a;
 										return 'Syntax error : ' + ($elm$core$Debug$toString(d.problem) + (' at (' + ($elm$core$String$fromInt(d.row) + (', ' + ($elm$core$String$fromInt(d.col) + ')')))));
-									case 'UnknownProc':
+									case 'UndefinedProc':
 										var proc = e.a;
-										return 'Unknown procedure name : ' + proc;
+										return 'Undefined procedure : ' + proc;
 									case 'Loop':
-										var proc = e.a;
-										return 'Infinite loop in procedure : ' + proc;
+										var cycle = e.a;
+										return 'Infinite loop : ' + $elm$core$Debug$toString(
+											$elm$core$Set$toList(cycle));
 									default:
 										return 'No main procedure';
 								}
@@ -7252,10 +7325,6 @@ var $elm$core$List$filter = F2(
 			_List_Nil,
 			list);
 	});
-var $elm$core$Tuple$second = function (_v0) {
-	var y = _v0.b;
-	return y;
-};
 var $elm$html$Html$Attributes$classList = function (classes) {
 	return $elm$html$Html$Attributes$class(
 		A2(
