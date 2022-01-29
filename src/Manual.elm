@@ -27,13 +27,21 @@ code text =
 view =
     details [ id "manual" ]
         [ summary [] [ text "Manuel" ]
-        , h2 "Programme"
+        , h2 "Structure de programme"
         , code
             [ text "instruction: Forward float | Left float | Right float | Repeat int proc | Call name | Color color | Width float"
             , br
             , text "proc: [instruction,...]"
             , br
             , text "procDef: name proc"
+            ]
+        , h2 "Scopes"
+        , p []
+            [ text "L'utilisation de '[ ]' définit un scope. Les paramètres de couleur et de largeur sont attachés à un scope, les modifier dans un scope ne les modifient pas dans le scope parent."
+            , br
+            , text "Dans le cas de 'Repeat', il est possible d'omettre les crochets s'il n'y a qu'une seule instruction :"
+            , br
+            , code [ text "'Repeat 4 [Call arc90]' -> 'Repeat 4 Call arc90'" ]
             ]
         , h2 "Instructions"
         , h3 "Color <color>"
