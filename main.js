@@ -7254,9 +7254,7 @@ var $author$project$Manual$view = A2(
 					$elm$html$Html$text('Manuel')
 				])),
 			$author$project$Manual$h2('Programme'),
-			A2(
-			$elm$html$Html$p,
-			_List_Nil,
+			$author$project$Manual$code(
 			_List_fromArray(
 				[
 					$elm$html$Html$text('instruction: Forward float | Left float | Right float | Repeat int proc | Call name | Color color | Width float'),
@@ -7264,14 +7262,6 @@ var $author$project$Manual$view = A2(
 					$elm$html$Html$text('proc: [instruction,...]'),
 					$author$project$Manual$br,
 					$elm$html$Html$text('procDef: name proc')
-				])),
-			$author$project$Manual$h3('Exemple'),
-			$author$project$Manual$code(
-			_List_fromArray(
-				[
-					$elm$html$Html$text('circle [Repeat 15 [Forward 10, Left 24]]'),
-					$author$project$Manual$br,
-					$elm$html$Html$text('[Call circle]')
 				])),
 			$author$project$Manual$h2('Instructions'),
 			$author$project$Manual$h3('Color <color>'),
@@ -7308,6 +7298,16 @@ var $author$project$Manual$view = A2(
 									$elm$html$Html$text('Nom de couleur CSS, ex. beige')
 								]))
 						]))
+				])),
+			$author$project$Manual$h2('Exemples'),
+			$author$project$Manual$code(
+			_List_fromArray(
+				[
+					$elm$html$Html$text('arc90 [Repeat 5 [Right 9, Forward 10], Color yellow, Repeat 5 [Right 9, Forward 10]]'),
+					$author$project$Manual$br,
+					$elm$html$Html$text('circle [Color red, Repeat 4 [Call arc90]]'),
+					$author$project$Manual$br,
+					$elm$html$Html$text('[Color blue, Width 2, Repeat 6 [Call circle, Forward 40, Left 60]]')
 				]))
 		]));
 var $author$project$ProgramList$MouseOut = {$: 'MouseOut'};
